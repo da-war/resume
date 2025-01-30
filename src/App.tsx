@@ -26,6 +26,7 @@ const App = () => {
   if (!loaded && !error) {
     return null;
   }
+    
 
   return (
     <NavigationContainer>

@@ -7,6 +7,7 @@ import { Image } from "react-native";
 import { COLORS } from "../constants/theme";
 import ManageNavigator from "./manage/ManageNavigator";
 import CardStack from "./card/CardStack";
+import HomeStack from "./home/HomeStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -25,7 +26,7 @@ const AppNavigator = () => {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeStack}
         options={{
           tabBarIcon: ({ focused }) => (
             <Image

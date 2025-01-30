@@ -39,7 +39,7 @@ const CardScreen = () => {
       id: 4,
       title: "Skills",
       icon: require("@/assets/icons/expertise.png"),
-      onPress: () => navigation.navigate("Skills"),
+      onPress: () => navigation.navigate("skills"),
     },
     {
       id: 5,

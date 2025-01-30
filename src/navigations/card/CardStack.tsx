@@ -6,6 +6,7 @@ import PersonalProfile from "@/src/screens/app/PersonalProfile";
 import WorkExperience from "@/src/screens/app/WorkExperience";
 import Experiences from "@/src/screens/app/Experiences";
 import Hobbies from "@/src/screens/app/Hobbies";
+import Skills from "@/src/screens/app/Skills";
 
 const Stack = createNativeStackNavigator();
 
@@ -17,6 +18,7 @@ const CardStack = () => {
       <Stack.Screen name="workExperience" component={WorkExperience} />
       <Stack.Screen name="experiences" component={Experiences} />
       <Stack.Screen name="hobbies" component={Hobbies} />
+      <Stack.Screen name="skills" component={Skills} />
     </Stack.Navigator>
   );
 };

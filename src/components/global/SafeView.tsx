@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 interface SafeViewProps {
   children: React.ReactNode;
-  style: ViewStyle;
+  style?: ViewStyle;
 }
 
 const SafeView: React.FC<SafeViewProps> = ({ children, style }) => {
@@ -16,5 +16,3 @@ const SafeView: React.FC<SafeViewProps> = ({ children, style }) => {
 };
 
 export default SafeView;
-
-const styles = StyleSheet.create({});

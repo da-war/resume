@@ -1,6 +1,7 @@
 import {
   FlatList,
   Image,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -21,9 +22,11 @@ import {
 import GradientBackground from "@/src/components/global/GradientBackground";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { resumes } from "@/src/constants/data";
+import { useNavigation } from "@react-navigation/native";
 
 const HomeScreen = () => {
   const [searchText, setSearchText] = React.useState("");
+  const navigation = useNavigation();
   return (
     <SafeView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -97,17 +100,19 @@ const HomeScreen = () => {
             columnWrapperStyle={{ justifyContent: "space-around" }}
             numColumns={2}
             renderItem={({ item }) => (
-              <Image
-                source={item.image}
-                style={{
-                  width: screenWidth / 2.4,
-                  height: screenHeight / 4,
-                  marginRight: 10,
-                  marginBottom: 10,
-                  ...SHADOWS.medium,
-                }}
-                resizeMode="contain"
-              />
+              <Pressable onPress={() => navigation.navigate("preview")}>
+                <Image
+                  source={item.image}
+                  style={{
+                    width: screenWidth / 2.4,
+                    height: screenHeight / 4,
+                    marginRight: 10,
+                    marginBottom: 10,
+                    ...SHADOWS.medium,
+                  }}
+                  resizeMode="contain"
+                />
+              </Pressable>
             )}
           />
         </View>
