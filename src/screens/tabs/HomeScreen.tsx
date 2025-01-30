@@ -49,6 +49,14 @@ const HomeScreen = () => {
     loadRecentTemplates();
   }, []);
 
+  useEffect(() => {
+    deleteAsync();
+  }, []);
+
+  const deleteAsync = async () => {
+    await AsyncStorage.removeItem("resume-storage");
+  };
+
   const loadRecentTemplates = async () => {
     try {
       const history = await AsyncStorage.getItem(TEMPLATE_HISTORY_KEY);
