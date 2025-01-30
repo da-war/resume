@@ -20,10 +20,14 @@ interface ResumeStore {
   addExperience: (experience: ResumeStore['experiences'][0]) => void;
   updateExperience: (index: number, experience: ResumeStore['experiences'][0]) => void;
   removeExperience: (index: number) => void;
-  updateSkills: (skills: string[]) => void;
-  updateLanguages: (languages: ResumeStore['languages']) => void;
-  updateHobbies: (hobbies: string[]) => void;
-  updateAchievements: (achievements: string[]) => void;
+  addSkill: (skill: string) => void;
+  removeSkill: (skill: string) => void;
+  addLanguage: (language: ResumeStore['languages'][0]) => void;
+  removeLanguage: (name: string) => void;
+  addHobby: (hobby: string) => void;
+  removeHobby: (hobby: string) => void;
+  addAchievement: (achievement: string) => void;
+  removeAchievement: (achievement: string) => void;
   resetStore: () => void;
 }
 
@@ -46,10 +50,14 @@ export const useResumeStore = create<ResumeStore>()(
       removeExperience: (index) => set((state) => ({
         experiences: state.experiences.filter((_, i) => i !== index),
       })),
-      updateSkills: (skills) => set({ skills }),
-      updateLanguages: (languages) => set({ languages }),
-      updateHobbies: (hobbies) => set({ hobbies }),
-      updateAchievements: (achievements) => set({ achievements }),
+      addSkill: (skill) => set((state) => ({ skills: [...state.skills, skill] })),
+      removeSkill: (skill) => set((state) => ({ skills: state.skills.filter((s) => s !== skill) })),
+      addLanguage: (language) => set((state) => ({ languages: [...state.languages, language] })),
+      removeLanguage: (name) => set((state) => ({ languages: state.languages.filter((lang) => lang.name !== name) })),
+      addHobby: (hobby) => set((state) => ({ hobbies: [...state.hobbies, hobby] })),
+      removeHobby: (hobby) => set((state) => ({ hobbies: state.hobbies.filter((h) => h !== hobby) })),
+      addAchievement: (achievement) => set((state) => ({ achievements: [...state.achievements, achievement] })),
+      removeAchievement: (achievement) => set((state) => ({ achievements: state.achievements.filter((a) => a !== achievement) })),
       resetStore: () => set(() => ({
         personalInfo: { name: '', email: '', phone: '', photo: '', about: '' },
         experiences: [],

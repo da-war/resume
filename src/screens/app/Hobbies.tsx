@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Alert,
   FlatList,
@@ -8,36 +9,46 @@ import {
   Text,
   View,
 } from "react-native";
-import React from "react";
+import { useNavigation } from "@react-navigation/native";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import SafeView from "@/src/components/global/SafeView";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { COLORS, FONTS } from "@/src/constants/theme";
-import { useNavigation } from "@react-navigation/native";
 import AppButton from "@/src/components/global/AppButton";
 import AppTextInput from "@/src/components/global/AppTextInput";
 import GradientBackground from "@/src/components/global/GradientBackground";
+import { useResumeStore } from "@/src/store/resumeStore";
 
-interface hobbyType {
-  name: string;
-}
+const schema = yup.object().shape({
+  hobby: yup
+    .string()
+    .min(3, "Hobby must be at least 3 characters")
+    .required("Hobby is required"),
+});
 
 const Hobbies: React.FC = () => {
   const navigation = useNavigation();
+  const { hobbies, addHobby, removeHobby } = useResumeStore();
   const [isOpenModal, setIsOpenModal] = React.useState(false);
-  const [hobby, setHobby] = React.useState("");
-  const hobbies: hobbyType[] = [];
 
-  const handleHobbiesSave = () => {
-    if (hobby.length < 3) {
-      Alert.alert("Please add Some Real Hobby");
-      return;
-    }
-    const newHobby: hobbyType = {
-      name: hobby,
-    };
-    hobbies.push(newHobby);
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: { hobby: "" },
+  });
+
+  const handleHobbiesSave = (data: { hobby: string }) => {
+    addHobby(data.hobby);
+    reset();
     setIsOpenModal(false);
   };
+
   return (
     <>
       <SafeView style={styles.mainContainer}>
@@ -61,17 +72,18 @@ const Hobbies: React.FC = () => {
           <View style={styles.listContainer}>
             <FlatList
               data={hobbies}
-              keyExtractor={(item) => item.name.toString()}
+              keyExtractor={(item, index) => index.toString()}
               renderItem={({ item }) => (
-                <View>
-                  <View style={styles.itemIconContainer}>
-                    <GradientBackground />
+                <View style={styles.container}>
+                  <View style={styles.imageContainer}>
                     <Image
                       source={require("@/assets/icons/hobbies.png")}
-                      style={styles.image}
+                      style={{ width: 24, height: 24 }}
                       resizeMode="contain"
                     />
+                    <GradientBackground />
                   </View>
+                  <Text style={styles.titleHobby}>{item}</Text>
                 </View>
               )}
             />
@@ -83,15 +95,24 @@ const Hobbies: React.FC = () => {
       <Modal visible={isOpenModal} animationType="slide">
         <View style={{ flex: 1, paddingTop: 100, paddingHorizontal: 20 }}>
           <Text style={[styles.title, { marginBottom: 40 }]}>Hobbies</Text>
-          <AppTextInput
-            title="Enter Hobbies"
-            value={hobby}
-            onChangeText={(text) => setHobby(text)}
-            placeholder="Enter Your Hobbies"
-            icon="account"
+          <Controller
+            control={control}
+            name="hobby"
+            render={({ field: { onChange, value } }) => (
+              <AppTextInput
+                title="Enter Hobbies"
+                value={value}
+                onChangeText={onChange}
+                placeholder="Enter Your Hobbies"
+                icon="account"
+              />
+            )}
           />
+          {errors.hobby && (
+            <Text style={{ color: "red" }}>{errors.hobby.message}</Text>
+          )}
 
-          <AppButton title="Save" onPress={() => handleHobbiesSave()} />
+          <AppButton title="Save" onPress={handleSubmit(handleHobbiesSave)} />
         </View>
       </Modal>
     </>
@@ -119,5 +140,32 @@ const styles = StyleSheet.create({
     width: "75%",
     height: "70%",
     alignSelf: "center",
+  },
+  itemIconContainer: {
+    padding: 10,
+    width: "20%",
+    flexDirection: "row",
+  },
+  listContainer: {
+    flex: 1,
+    marginTop: 10,
+  },
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#f3f3f3",
+    borderRadius: 10,
+  },
+  imageContainer: {
+    padding: 10,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  titleHobby: {
+    fontSize: 16,
+    fontFamily: FONTS.semiBold,
+    marginLeft: 15,
   },
 });

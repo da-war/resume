@@ -24,12 +24,6 @@ const CardScreen = () => {
       onPress: () => navigation.navigate("personalProfile"),
     },
     {
-      id: 2,
-      title: "Summary",
-      icon: require("@/assets/icons/summary.png"),
-      onPress: () => navigation.navigate("Summary"),
-    },
-    {
       id: 3,
       title: "Work Experience",
       icon: require("@/assets/icons/work.png"),
@@ -52,6 +46,18 @@ const CardScreen = () => {
       title: "Hobbies",
       icon: require("@/assets/icons/hobbies.png"),
       onPress: () => navigation.navigate("hobbies"),
+    },
+    {
+      id: 7,
+      title: "Languages",
+      icon: require("@/assets/icons/hobbies.png"),
+      onPress: () => navigation.navigate("languages"),
+    },
+    {
+      id: 8,
+      title: "Achievements",
+      icon: require("@/assets/icons/hobbies.png"),
+      onPress: () => navigation.navigate("achievements"),
     },
   ];
 
@@ -76,7 +82,8 @@ const CardScreen = () => {
             padding: 20,
           }}
           columnWrapperStyle={{
-            justifyContent: "space-around",
+            justifyContent: "flex-start",
+            gap: 20,
           }}
           renderItem={({ item }) => (
             <Card title={item.title} icon={item.icon} onPress={item.onPress} />

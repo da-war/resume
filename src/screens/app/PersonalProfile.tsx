@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Image,
   Pressable,
@@ -5,47 +6,47 @@ import {
   StyleSheet,
   Text,
   View,
+  Modal,
 } from "react-native";
-import React, { useState } from "react";
 import SafeView from "@/src/components/global/SafeView";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { COLORS, FONTS } from "@/src/constants/theme";
 import { useNavigation } from "@react-navigation/native";
-
 import * as ImagePicker from "expo-image-picker";
+import { useResumeStore } from "@/src/store/resumeStore";
+import { useForm, Controller } from "react-hook-form";
 import AppTextInput from "@/src/components/global/AppTextInput";
 import AppButton from "@/src/components/global/AppButton";
 
 const PersonalProfile = () => {
   const navigation = useNavigation();
-  const [image, setImage] = useState<string | null>(null);
-
-  const [name, setName] = React.useState<string>("");
-  const [email, setEmail] = React.useState<string>("");
-  const [phone, setPhone] = React.useState<string>("");
-  const [address, setAddress] = React.useState<string>("");
-  const [field, setField] = React.useState<string>("");
+  const { personalInfo, updatePersonalInfo } = useResumeStore();
+  const [modalVisible, setModalVisible] = useState(false);
+  const { control, handleSubmit, setValue } = useForm({
+    defaultValues: personalInfo,
+  });
 
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
-
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       alert("Sorry, we need camera roll permissions to make this work!");
       return;
     }
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
 
-    console.log(result);
-
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      updatePersonalInfo({ ...personalInfo, photo: result.assets[0].uri });
     }
+  };
+
+  const onSubmit = (data) => {
+    updatePersonalInfo(data);
+    setModalVisible(false);
   };
 
   return (
@@ -58,73 +59,97 @@ const PersonalProfile = () => {
           <Text numberOfLines={1} adjustsFontSizeToFit style={styles.title}>
             Personal Information
           </Text>
-          <MaterialCommunityIcons
-            name="dots-vertical"
-            size={24}
-            color="black"
-          />
+          <Pressable onPress={() => setModalVisible(true)}>
+            <MaterialCommunityIcons name="pencil" size={24} color="black" />
+          </Pressable>
         </View>
 
         <View style={styles.imageContainer}>
-          <View>
-            {image ? (
-              <Image source={{ uri: image }} style={styles.image} />
-            ) : (
-              <Image
-                source={require("@/assets/images/resume1.png")}
-                style={styles.image}
-              />
-            )}
-            <Pressable style={styles.absolute} onPress={pickImage}>
-              <MaterialCommunityIcons
-                name="pencil"
-                size={20}
-                color={COLORS.white}
-              />
-            </Pressable>
-          </View>
+          <Image
+            source={{
+              uri: personalInfo.photo || "https://via.placeholder.com/100",
+            }}
+            style={styles.image}
+          />
+          <Pressable style={styles.absolute} onPress={pickImage}>
+            <MaterialCommunityIcons
+              name="pencil"
+              size={20}
+              color={COLORS.white}
+            />
+          </Pressable>
         </View>
-        <Text style={styles.name}>Dawar</Text>
+        <Text style={styles.name}>{personalInfo.name || "Your Name"}</Text>
+        <Text style={styles.info}>{personalInfo.email}</Text>
+        <Text style={styles.info}>{personalInfo.phone}</Text>
+        <Text style={styles.info}>{personalInfo.about}</Text>
 
-        <AppTextInput
-          title="Your Name"
-          placeholder="Kami Williams"
-          icon="account"
-          value={name}
-          onChangeText={(text) => setName(text)}
-        />
-        <AppTextInput
-          title="Your Email"
-          placeholder="kami@gmail.com"
-          icon="email"
-          value={name}
-          onChangeText={(text) => setEmail(text)}
-        />
-        <AppTextInput
-          title="Phone Number"
-          placeholder="+923036861918"
-          icon="phone"
-          value={phone}
-          onChangeText={(text) => setPhone(text)}
-        />
-        <AppTextInput
-          title="Your Address"
-          placeholder="address"
-          icon="map-marker"
-          value={address}
-          onChangeText={(text) => setAddress(text)}
-        />
-        <AppTextInput
-          title="Your Field"
-          placeholder="computer science"
-          icon="book"
-          value={field}
-          onChangeText={(text) => setField(text)}
-        />
-
-        <View style={styles.btnContainer}>
-          <AppButton title="Save" onPress={() => {}} />
-        </View>
+        {/* Modal for Editing Profile */}
+        <Modal visible={modalVisible} animationType="slide">
+          <SafeView style={styles.modalContainer}>
+            <ScrollView>
+              <Controller
+                control={control}
+                name="name"
+                render={({ field: { onChange, value } }) => (
+                  <AppTextInput
+                    title="Your Name"
+                    placeholder="Kami Williams"
+                    icon="account"
+                    value={value}
+                    onChangeText={onChange}
+                  />
+                )}
+              />
+              <Controller
+                control={control}
+                name="email"
+                render={({ field: { onChange, value } }) => (
+                  <AppTextInput
+                    title="Your Email"
+                    placeholder="kami@gmail.com"
+                    icon="email"
+                    value={value}
+                    onChangeText={onChange}
+                  />
+                )}
+              />
+              <Controller
+                control={control}
+                name="phone"
+                render={({ field: { onChange, value } }) => (
+                  <AppTextInput
+                    title="Phone Number"
+                    placeholder="+923036861918"
+                    icon="phone"
+                    value={value}
+                    onChangeText={onChange}
+                  />
+                )}
+              />
+              <Controller
+                control={control}
+                name="about"
+                render={({ field: { onChange, value } }) => (
+                  <AppTextInput
+                    title="About You"
+                    placeholder="Write about yourself..."
+                    icon="information"
+                    value={value}
+                    onChangeText={onChange}
+                  />
+                )}
+              />
+              <View style={styles.btnContainer}>
+                <AppButton title="Save" onPress={handleSubmit(onSubmit)} />
+                <AppButton
+                  title="Cancel"
+                  onPress={() => setModalVisible(false)}
+                />
+              </View>
+            </ScrollView>
+          </SafeView>
+        </Modal>
       </ScrollView>
     </SafeView>
   );
@@ -133,28 +158,13 @@ const PersonalProfile = () => {
 export default PersonalProfile;
 
 const styles = StyleSheet.create({
-  absolute: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    backgroundColor: COLORS.primary,
-    borderRadius: "50%",
-    padding: 3,
-    borderColor: COLORS.secondary,
-  },
-  container: {
-    flex: 1,
-    padding: 20,
-  },
+  container: { flex: 1, padding: 20 },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  title: {
-    fontSize: 18,
-    fontFamily: FONTS.medium,
-  },
+  title: { fontSize: 18, fontFamily: FONTS.medium },
   image: {
     width: 100,
     height: 100,
@@ -167,12 +177,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 20,
   },
-  name: {
-    fontFamily: FONTS.medium,
-    fontSize: 20,
-    textAlign: "center",
+  absolute: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    padding: 5,
   },
-  btnContainer: {
-    marginTop: 20,
-  },
+  name: { fontFamily: FONTS.medium, fontSize: 20, textAlign: "center" },
+  info: { textAlign: "center", fontSize: 16, color: COLORS.gray },
+  modalContainer: { flex: 1, padding: 20, paddingTop: 100 },
+  btnContainer: { marginTop: 20, gap: 10 },
 });

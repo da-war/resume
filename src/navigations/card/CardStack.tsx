@@ -7,6 +7,8 @@ import WorkExperience from "@/src/screens/app/WorkExperience";
 import Experiences from "@/src/screens/app/Experiences";
 import Hobbies from "@/src/screens/app/Hobbies";
 import Skills from "@/src/screens/app/Skills";
+import LanguagesScreen from "@/src/screens/app/Languages";
+import Achievements from "@/src/screens/app/Achievements";
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +21,8 @@ const CardStack = () => {
       <Stack.Screen name="experiences" component={Experiences} />
       <Stack.Screen name="hobbies" component={Hobbies} />
       <Stack.Screen name="skills" component={Skills} />
+      <Stack.Screen name="languages" component={LanguagesScreen} />
+      <Stack.Screen name="achievements" component={Achievements} />
     </Stack.Navigator>
   );
 };
