@@ -17,7 +17,7 @@ const Achievements = () => {
     defaultValues: { achievement: "" },
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: any) => {
     addAchievement(data.achievement);
     setModalVisible(false);
     reset();
@@ -67,7 +67,7 @@ const Achievements = () => {
                 title="Achievement"
                 placeholder="Won Coding Competition"
                 icon="trophy"
-                value={value}
+                defaultValue={value}
                 onChangeText={onChange}
               />
             )}

@@ -140,7 +140,7 @@ const WorkExperience: React.FC = () => {
             render={({ field: { onChange, value } }) => (
               <AppTextInput
                 placeholder="Enter Organization Name"
-                value={value}
+                defaultValue={value}
                 onChangeText={onChange}
                 errorMessage={errors.company?.message}
               />
@@ -152,7 +152,7 @@ const WorkExperience: React.FC = () => {
             render={({ field: { onChange, value } }) => (
               <AppTextInput
                 placeholder="Enter Designation"
-                value={value}
+                defaultValue={value}
                 onChangeText={onChange}
                 errorMessage={errors.position?.message}
               />
@@ -164,7 +164,7 @@ const WorkExperience: React.FC = () => {
             render={({ field: { onChange, value } }) => (
               <AppTextInput
                 placeholder="June 2022 - June 2024/Present"
-                value={value}
+                defaultValue={value}
                 onChangeText={onChange}
                 icon="calendar"
                 errorMessage={errors.date?.message}
@@ -178,7 +178,7 @@ const WorkExperience: React.FC = () => {
             render={({ field: { onChange, value } }) => (
               <AppTextInput
                 placeholder="Enter Description"
-                value={value}
+                defaultValue={value}
                 multiline
                 numberOfLines={3}
                 onChangeText={onChange}

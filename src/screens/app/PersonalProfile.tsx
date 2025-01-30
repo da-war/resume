@@ -155,7 +155,7 @@ const PersonalProfile = () => {
                     title="Your Name"
                     placeholder="Kami Williams"
                     icon="account"
-                    value={value}
+                    defaultValue={value}
                     onChangeText={onChange}
                   />
                 )}
@@ -181,7 +181,7 @@ const PersonalProfile = () => {
                     title="Phone Number"
                     placeholder="+923036861918"
                     icon="phone"
-                    value={value}
+                    defaultValue={value}
                     onChangeText={onChange}
                   />
                 )}
@@ -194,7 +194,7 @@ const PersonalProfile = () => {
                     title="About You"
                     placeholder="Write about yourself..."
                     icon="information"
-                    value={value}
+                    defaultValue={value}
                     onChangeText={onChange}
                     multiline
                     numberOfLines={4}

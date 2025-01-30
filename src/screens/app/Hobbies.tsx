@@ -61,7 +61,7 @@ const Hobbies: React.FC = () => {
           />
         </Pressable>
         {hobbies.length < 1 ? (
-          <View style={styles.imageLoad}>
+          <View>
             <Image
               source={require("@/assets/images/hobby.png")}
               style={styles.image}
@@ -101,7 +101,7 @@ const Hobbies: React.FC = () => {
             render={({ field: { onChange, value } }) => (
               <AppTextInput
                 title="Enter Hobbies"
-                value={value}
+                defaultValue={value}
                 onChangeText={onChange}
                 placeholder="Enter Your Hobbies"
                 icon="account"

@@ -17,7 +17,7 @@ const LanguagesScreen = () => {
     defaultValues: { name: "", level: "" },
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: any) => {
     addLanguage(data);
     setModalVisible(false);
     reset();
@@ -69,7 +69,7 @@ const LanguagesScreen = () => {
                 title="Language"
                 placeholder="English"
                 icon="translate"
-                value={value}
+                defaultValue={value}
                 onChangeText={onChange}
               />
             )}
