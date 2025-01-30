@@ -35,18 +35,19 @@ const PersonalProfile = () => {
       alert("Sorry, we need camera roll permissions to make this work!");
       return;
     }
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
       quality: 1,
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets?.length > 0) {
       setTempPhoto(result.assets[0].uri);
     }
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: any) => {
     updatePersonalInfo({ ...data, photo: tempPhoto });
     setModalVisible(false);
   };
@@ -66,6 +67,11 @@ const PersonalProfile = () => {
     personalInfo.email ||
     personalInfo.phone ||
     personalInfo.about;
+
+  const myUri =
+    typeof personalInfo.photo === "string" && personalInfo.photo
+      ? { uri: personalInfo.photo }
+      : require("@/assets/images/hobby.png");
 
   return (
     <SafeView style={styles.container}>
@@ -87,13 +93,13 @@ const PersonalProfile = () => {
         {hasPersonalInfo ? (
           <>
             <View style={styles.imageContainer}>
-              <Image
-                source={{
-                  uri:
-                    personalInfo.photo || require("@/assets/images/hobby.png"),
-                }}
-                style={styles.image}
-              />
+              {myUri && (
+                <Image
+                  source={myUri}
+                  style={styles.image}
+                  resizeMode="contain"
+                />
+              )}
               <AppButton
                 title="Update Profile"
                 onPress={openEditForm}
@@ -127,9 +133,11 @@ const PersonalProfile = () => {
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.modalImageContainer}>
                 <Image
-                  source={{
-                    uri: tempPhoto || require("@/assets/images/hobby.png"),
-                  }}
+                  source={
+                    tempPhoto
+                      ? { uri: tempPhoto }
+                      : require("@/assets/images/hobby.png")
+                  }
                   style={styles.modalImage}
                 />
 

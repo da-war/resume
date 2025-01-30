@@ -9,7 +9,7 @@ const Stack = createNativeStackNavigator();
 const ManageNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Manage" component={Manage} />
+      <Stack.Screen name="Manages" component={Manage} />
       <Stack.Screen name="personalProfile" component={PersonalProfile} />
     </Stack.Navigator>
   );
