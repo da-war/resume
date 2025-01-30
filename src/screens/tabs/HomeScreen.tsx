@@ -49,13 +49,13 @@ const HomeScreen = () => {
     loadRecentTemplates();
   }, []);
 
-  useEffect(() => {
-    deleteAsync();
-  }, []);
+  // useEffect(() => {
+  //   deleteAsync();
+  // }, []);
 
-  const deleteAsync = async () => {
-    await AsyncStorage.removeItem("resume-storage");
-  };
+  // const deleteAsync = async () => {
+  //   await AsyncStorage.removeItem("resume-storage");
+  // };
 
   const loadRecentTemplates = async () => {
     try {
