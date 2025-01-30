@@ -6,7 +6,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 interface AppTextInputProps {
   icon?: any;
   placeholder: string;
-  value: string;
+  defaultValue: string;
   onChangeText: (text: string) => void;
   secureTextEntry?: boolean;
   keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
@@ -22,7 +22,7 @@ const AppTextInput: React.FC<AppTextInputProps> = ({
   title,
   icon,
   placeholder,
-  value,
+  defaultValue,
   onChangeText,
   secureTextEntry,
   keyboardType,
@@ -44,7 +44,6 @@ const AppTextInput: React.FC<AppTextInputProps> = ({
           />
         )}
         <TextInput
-          value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
           secureTextEntry={secureTextEntry}
@@ -55,6 +54,7 @@ const AppTextInput: React.FC<AppTextInputProps> = ({
           autoCorrect={autoCorrect}
           style={[styles.input, style]}
           placeholderTextColor="#878585"
+          defaultValue={defaultValue}
         />
       </View>
     </>

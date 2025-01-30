@@ -35,12 +35,7 @@ const CardScreen = () => {
       icon: require("@/assets/icons/expertise.png"),
       onPress: () => navigation.navigate("skills"),
     },
-    {
-      id: 5,
-      title: "Languages",
-      icon: require("@/assets/icons/language.png"),
-      onPress: () => navigation.navigate("Languages"),
-    },
+
     {
       id: 6,
       title: "Hobbies",
@@ -50,13 +45,13 @@ const CardScreen = () => {
     {
       id: 7,
       title: "Languages",
-      icon: require("@/assets/icons/hobbies.png"),
+      icon: require("@/assets/icons/language.png"),
       onPress: () => navigation.navigate("languages"),
     },
     {
       id: 8,
       title: "Achievements",
-      icon: require("@/assets/icons/hobbies.png"),
+      icon: require("@/assets/icons/education.png"),
       onPress: () => navigation.navigate("achievements"),
     },
   ];

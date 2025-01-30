@@ -1,5 +1,4 @@
-// screens/PreviewScreen.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,93 +7,111 @@ import {
   ActivityIndicator,
   ScrollView,
   Alert,
-  Dimensions,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import { templates } from "@/src/constants/data";
+import { useResumeStore } from "@/src/store/resumeStore";
 
-// Dummy data for demonstration
-const dummyData = {
-  personalInfo: {
-    name: "Alex Thompson",
-    email: "alex.thompson@email.com",
-    phone: "+1 (555) 123-4567",
-    photo: "https://i.pravatar.cc/300",
-    about:
-      "Passionate and creative full-stack developer with 5+ years of experience building scalable web and mobile applications. Specialized in React Native and Node.js ecosystem. Committed to writing clean, maintainable code and mentoring junior developers.",
-  },
-  experiences: [
-    {
-      company: "Tech Innovators Inc.",
-      position: "Senior Mobile Developer",
-      date: "2021 - Present",
-      description:
-        "Led the development of multiple high-profile mobile applications, improving team productivity by 40% through implementation of modern development practices. Mentored junior developers and established code review processes.",
-    },
-    {
-      company: "Digital Solutions Ltd.",
-      position: "Full Stack Developer",
-      date: "2019 - 2021",
-      description:
-        "Developed and maintained multiple client projects using React Native, Node.js, and AWS infrastructure. Implemented CI/CD pipelines reducing deployment time by 50%.",
-    },
-    {
-      company: "StartUp Vision",
-      position: "Junior Developer",
-      date: "2018 - 2019",
-      description:
-        "Worked on front-end development using React and React Native. Contributed to the development of 3 successful mobile applications.",
-    },
-  ],
-  skills: [
-    "React Native",
-    "JavaScript",
-    "TypeScript",
-    "Node.js",
-    "Redux",
-    "AWS",
-    "GraphQL",
-    "MongoDB",
-    "Docker",
-    "CI/CD",
-    "Git",
-    "REST APIs",
-  ],
-  languages: [
-    { name: "English", level: "Native" },
-    { name: "Spanish", level: "Professional" },
-    { name: "Mandarin", level: "Conversational" },
-  ],
-  hobbies: [
-    "Open Source Contributing",
-    "Technical Writing",
-    "Music Production",
-    "Rock Climbing",
-    "Photography",
-  ],
-  achievements: [
-    "Led development of an app with 1M+ downloads on App Store and Play Store",
-    "Reduced app load time by 60% through optimization and lazy loading",
-    "Featured speaker at React Native Conference 2023",
-    "Published 3 npm packages with 10k+ combined downloads",
-    "Awarded 'Developer of the Year 2022' at Tech Innovators Inc.",
-    "Contributed to major open source React Native libraries",
-  ],
-};
+const TEMPLATE_HISTORY_KEY = "template_history";
 
-export default function PreviewScreen({ navigation }) {
-  const [selectedTemplate, setSelectedTemplate] = useState("modern");
+export default function PreviewScreen({ navigation, route }) {
+  const initialTemplate = route.params?.initialTemplate || "modern";
+  const [selectedTemplate, setSelectedTemplate] = useState(initialTemplate);
   const [loading, setLoading] = useState(false);
   const [html, setHtml] = useState("");
+  const [base64Image, setBase64Image] = useState("");
+
+  const personalInfo = useResumeStore((state) => state.personalInfo);
+  const experiences = useResumeStore((state) => state.experiences);
+  const skills = useResumeStore((state) => state.skills);
+  const languages = useResumeStore((state) => state.languages);
+  const hobbies = useResumeStore((state) => state.hobbies);
+  const achievements = useResumeStore((state) => state.achievements);
+
+  // Convert image URI to base64
+  useEffect(() => {
+    const convertImageToBase64 = async () => {
+      if (personalInfo.photo) {
+        try {
+          const base64 = await FileSystem.readAsStringAsync(
+            personalInfo.photo,
+            {
+              encoding: FileSystem.EncodingType.Base64,
+            }
+          );
+          setBase64Image(`data:image/jpeg;base64,${base64}`);
+        } catch (error) {
+          console.error("Error converting image to base64:", error);
+        }
+      }
+    };
+
+    convertImageToBase64();
+  }, [personalInfo.photo]);
+
+  // Memoize the resume data object with base64 image
+  const resumeData = useMemo(
+    () => ({
+      personalInfo: {
+        ...personalInfo,
+        photo: base64Image || personalInfo.photo, // Use base64 if available
+      },
+      experiences,
+      skills,
+      languages,
+      hobbies,
+      achievements,
+    }),
+    [
+      personalInfo,
+      base64Image,
+      experiences,
+      skills,
+      languages,
+      hobbies,
+      achievements,
+    ]
+  );
 
   useEffect(() => {
-    setHtml(templates[selectedTemplate](dummyData));
-  }, [selectedTemplate]);
+    if (selectedTemplate && resumeData) {
+      const generatedHtml = templates[selectedTemplate](resumeData);
+      setHtml(generatedHtml);
+    }
+  }, [selectedTemplate, resumeData]);
+
+  const saveToTemplateHistory = async (templateName, pdfUri) => {
+    try {
+      const existingHistory = await AsyncStorage.getItem(TEMPLATE_HISTORY_KEY);
+      const history = existingHistory ? JSON.parse(existingHistory) : [];
+
+      const newEntry = {
+        template: templateName,
+        image: pdfUri,
+        timestamp: new Date().toISOString(),
+      };
+
+      const filteredHistory = history.filter(
+        (item) => item.template !== templateName
+      );
+
+      const updatedHistory = [newEntry, ...filteredHistory];
+      const trimmedHistory = updatedHistory.slice(0, 10);
+
+      await AsyncStorage.setItem(
+        TEMPLATE_HISTORY_KEY,
+        JSON.stringify(trimmedHistory)
+      );
+    } catch (error) {
+      console.error("Error saving template history:", error);
+    }
+  };
 
   const exportPDF = async () => {
     try {
@@ -103,6 +120,8 @@ export default function PreviewScreen({ navigation }) {
         html,
         base64: false,
       });
+
+      await saveToTemplateHistory(selectedTemplate, uri);
 
       await Sharing.shareAsync(uri, {
         UTI: ".pdf",
@@ -116,9 +135,7 @@ export default function PreviewScreen({ navigation }) {
   };
 
   const TemplateSelector = () => (
-    <View
-      style={{ height: 100, justifyContent: "center", alignItems: "center" }}
-    >
+    <View style={styles.templateSelectorContainer}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -151,7 +168,6 @@ export default function PreviewScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -173,10 +189,8 @@ export default function PreviewScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Template Selector */}
       <TemplateSelector />
 
-      {/* Preview */}
       <View style={styles.previewContainer}>
         <WebView
           source={{ html }}
@@ -262,5 +276,10 @@ const styles = StyleSheet.create({
   webview: {
     flex: 1,
     borderRadius: 20,
+  },
+  templateSelectorContainer: {
+    height: 100,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

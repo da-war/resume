@@ -9,8 +9,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import SafeView from "@/src/components/global/SafeView";
 import {
   COLORS,
@@ -24,9 +25,81 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { resumes } from "@/src/constants/data";
 import { useNavigation } from "@react-navigation/native";
 
+const TEMPLATE_HISTORY_KEY = "template_history";
+
+// Define template mapping
+const TEMPLATE_TYPES = {
+  1: "modern",
+  2: "minimal",
+  3: "creative",
+};
+
+const TEMPLATE_IDS = {
+  modern: 1,
+  minimal: 2,
+  creative: 3,
+};
+
 const HomeScreen = () => {
-  const [searchText, setSearchText] = React.useState("");
+  const [searchText, setSearchText] = useState("");
+  const [recentTemplates, setRecentTemplates] = useState([]);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    loadRecentTemplates();
+  }, []);
+
+  const loadRecentTemplates = async () => {
+    try {
+      const history = await AsyncStorage.getItem(TEMPLATE_HISTORY_KEY);
+      if (history) {
+        const templates = JSON.parse(history);
+        setRecentTemplates(templates);
+      }
+    } catch (error) {
+      console.error("Error loading recent templates:", error);
+    }
+  };
+
+  const navigateToPreview = (templateIdOrName) => {
+    // If it's already a template name (string)
+    if (typeof templateIdOrName === "string") {
+      navigation.navigate("preview", {
+        initialTemplate: templateIdOrName.toLowerCase(),
+      });
+    }
+    // If it's a template ID (number)
+    else {
+      const templateType = TEMPLATE_TYPES[templateIdOrName];
+      if (templateType) {
+        navigation.navigate("preview", {
+          initialTemplate: templateType,
+        });
+      }
+    }
+  };
+
+  const RecentTemplateItem = ({ item }) => (
+    <Pressable
+      onPress={() => navigateToPreview(item.template)}
+      style={styles.recentTemplateItem}
+    >
+      <Image
+        source={{ uri: item.image }}
+        style={styles.recentTemplateImage}
+        resizeMode="contain"
+      />
+      <View style={styles.recentTemplateInfo}>
+        <Text style={styles.templateName}>
+          {item.template.charAt(0).toUpperCase() + item.template.slice(1)}
+        </Text>
+        <Text style={styles.templateDate}>
+          {new Date(item.timestamp).toLocaleDateString()}
+        </Text>
+      </View>
+    </Pressable>
+  );
+
   return (
     <SafeView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -51,12 +124,11 @@ const HomeScreen = () => {
 
         <View style={styles.textInputContainer}>
           <GradientBackground />
-
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
               value={searchText}
-              onChangeText={(text) => setSearchText(text)}
+              onChangeText={setSearchText}
               placeholder="Search for resume templates"
             />
             <TouchableOpacity style={styles.absoluteIcon}>
@@ -81,40 +153,41 @@ const HomeScreen = () => {
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={{ paddingVertical: 10 }}
             renderItem={({ item }) => (
-              <Image
-                source={item.image}
-                style={{ width: 100, height: 140, marginRight: 10 }}
-                resizeMode="contain"
-              />
+              <Pressable
+                onPress={() => navigateToPreview(item.id)}
+                style={styles.recommendedItemContainer}
+              >
+                <Image
+                  source={item.image}
+                  style={styles.recommendedImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.recommendedTemplateName}>
+                  {TEMPLATE_TYPES[item.id].charAt(0).toUpperCase() +
+                    TEMPLATE_TYPES[item.id].slice(1)}
+                </Text>
+              </Pressable>
             )}
           />
         </View>
 
-        <View style={{ flex: 1 }}>
+        <View style={styles.recentContainer}>
           <Text style={styles.headerTitleTwo}>Recently Created</Text>
-          <FlatList
-            data={resumes}
-            keyExtractor={(item) => item.id.toString()}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingVertical: 10 }}
-            columnWrapperStyle={{ justifyContent: "space-around" }}
-            numColumns={2}
-            renderItem={({ item }) => (
-              <Pressable onPress={() => navigation.navigate("preview")}>
-                <Image
-                  source={item.image}
-                  style={{
-                    width: screenWidth / 2.4,
-                    height: screenHeight / 4,
-                    marginRight: 10,
-                    marginBottom: 10,
-                    ...SHADOWS.medium,
-                  }}
-                  resizeMode="contain"
-                />
-              </Pressable>
-            )}
-          />
+          {recentTemplates.length > 0 ? (
+            <FlatList
+              data={recentTemplates}
+              keyExtractor={(item) => item.timestamp}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingVertical: 10 }}
+              columnWrapperStyle={{ justifyContent: "space-around" }}
+              numColumns={2}
+              renderItem={({ item }) => <RecentTemplateItem item={item} />}
+            />
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No recent resumes</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeView>
@@ -124,14 +197,30 @@ const HomeScreen = () => {
 export default HomeScreen;
 
 const styles = StyleSheet.create({
+  recommendedItemContainer: {
+    alignItems: "center",
+    marginRight: 20,
+  },
+  recommendedImage: {
+    width: 100,
+    height: 140,
+    borderRadius: 10,
+    marginBottom: 8,
+  },
+  recommendedTemplateName: {
+    fontFamily: FONTS.medium,
+    fontSize: 14,
+    color: COLORS.black,
+    textAlign: "center",
+  },
+  container: {
+    paddingHorizontal: 20,
+  },
   absoluteIcon: {
     position: "absolute",
     right: 10,
     top: "25%",
     bottom: 0,
-  },
-  container: {
-    paddingHorizontal: 20,
   },
   inputContainer: {
     backgroundColor: COLORS.white,
@@ -184,8 +273,8 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 20,
     backgroundColor: COLORS.background,
-    marginHorizontal: -20,
     marginVertical: 20,
+    borderRadius: 10,
   },
   recommendedHeader: {
     flexDirection: "row",
@@ -199,5 +288,46 @@ const styles = StyleSheet.create({
   headerTitleTwo: {
     fontSize: 18,
     fontFamily: FONTS.semiBold,
+  },
+  recentContainer: {
+    flex: 1,
+    marginBottom: 20,
+  },
+  recentTemplateItem: {
+    width: screenWidth / 2.4,
+    marginBottom: 20,
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+    ...SHADOWS.medium,
+  },
+  recentTemplateImage: {
+    width: "100%",
+    height: screenHeight / 4,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  recentTemplateInfo: {
+    padding: 10,
+  },
+  templateName: {
+    fontFamily: FONTS.medium,
+    fontSize: 14,
+    color: COLORS.black,
+  },
+  templateDate: {
+    fontFamily: FONTS.regular,
+    fontSize: 12,
+    color: COLORS.gray,
+    marginTop: 4,
+  },
+  emptyContainer: {
+    height: 200,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyText: {
+    fontFamily: FONTS.medium,
+    color: COLORS.gray,
+    fontSize: 16,
   },
 });

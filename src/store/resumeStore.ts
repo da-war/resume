@@ -43,13 +43,22 @@ export const useResumeStore = create<ResumeStore>()(
       achievements: [],
 
       updatePersonalInfo: (info) => set({ personalInfo: info }),
-      addExperience: (experience) => set((state) => ({ experiences: [...state.experiences, experience] })),
-      updateExperience: (index, experience) => set((state) => ({
-        experiences: state.experiences.map((exp, i) => (i === index ? experience : exp)),
-      })),
-      removeExperience: (index) => set((state) => ({
-        experiences: state.experiences.filter((_, i) => i !== index),
-      })),
+      addExperience: (experience) =>
+        set((state) => ({
+          experiences: [...state.experiences, { id: Date.now().toString(), ...experience }],
+        })),
+
+      removeExperience: (id) =>
+        set((state) => ({
+          experiences: state.experiences.filter((exp) => exp.id !== id),
+        })),
+
+      updateExperience: (id, updatedExperience) =>
+        set((state) => ({
+          experiences: state.experiences.map((exp) =>
+            exp.id === id ? { ...exp, ...updatedExperience } : exp
+          ),
+        })),
       addSkill: (skill) => set((state) => ({ skills: [...state.skills, skill] })),
       removeSkill: (skill) => set((state) => ({ skills: state.skills.filter((s) => s !== skill) })),
       addLanguage: (language) => set((state) => ({ languages: [...state.languages, language] })),
@@ -73,3 +82,5 @@ export const useResumeStore = create<ResumeStore>()(
     }
   )
 );
+
+
