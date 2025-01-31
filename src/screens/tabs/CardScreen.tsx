@@ -54,6 +54,30 @@ const CardScreen = () => {
       icon: require("@/assets/icons/education.png"),
       onPress: () => navigation.navigate("achievements"),
     },
+    {
+      id: 9,
+      title: "Education",
+      icon: require("@/assets/icons/hobbies.png"),
+      onPress: () => navigation.navigate("education"),
+    },
+    {
+      id: 10,
+      title: "Courses",
+      icon: require("@/assets/icons/language.png"),
+      onPress: () => navigation.navigate("courses"),
+    },
+    {
+      id: 11,
+      title: "Summary",
+      icon: require("@/assets/icons/education.png"),
+      onPress: () => navigation.navigate("summary"),
+    },
+    {
+      id: 12,
+      title: "Computer Skills",
+      icon: require("@/assets/icons/education.png"),
+      onPress: () => navigation.navigate("computerSkills"),
+    },
   ];
 
   return (

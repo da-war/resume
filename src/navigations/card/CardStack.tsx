@@ -9,6 +9,10 @@ import Hobbies from "@/src/screens/app/Hobbies";
 import Skills from "@/src/screens/app/Skills";
 import LanguagesScreen from "@/src/screens/app/Languages";
 import Achievements from "@/src/screens/app/Achievements";
+import Education from "@/src/screens/app/Education";
+import Courses from "@/src/screens/app/Courses";
+import SummaryScreen from "@/src/screens/app/SummaryScreen";
+import ComputerSkills from "@/src/screens/app/ComputerSkills";
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +27,10 @@ const CardStack = () => {
       <Stack.Screen name="skills" component={Skills} />
       <Stack.Screen name="languages" component={LanguagesScreen} />
       <Stack.Screen name="achievements" component={Achievements} />
+      <Stack.Screen name="education" component={Education} />
+      <Stack.Screen name="courses" component={Courses} />
+      <Stack.Screen name="summary" component={SummaryScreen} />
+      <Stack.Screen name="computerSkills" component={ComputerSkills} />
     </Stack.Navigator>
   );
 };
