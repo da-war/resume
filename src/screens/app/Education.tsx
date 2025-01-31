@@ -8,11 +8,16 @@ import {
   Button,
   StyleSheet,
   TextInput,
+  Pressable,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useResumeStore } from "@/src/store/resumeStore";
+import AppButton from "@/src/components/global/AppButton";
+import { COLORS, FONTS, SHADOWS } from "@/src/constants/theme";
+import SafeView from "@/src/components/global/SafeView";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 // Define the schema for form validation using Yup
 const educationSchema = yup.object().shape({
@@ -29,7 +34,7 @@ type EducationFormData = {
   dateTo: string;
 };
 
-const Education = () => {
+const Education = ({ navigation }) => {
   const { education, addEducation, updateEducation, removeEducation } =
     useResumeStore();
   const [isModalVisible, setModalVisible] = useState(false);
@@ -75,124 +80,148 @@ const Education = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={education}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text style={styles.title}>{item.degree}</Text>
-            <Text>{item.college}</Text>
-            <Text>{`${item.dateFrom} - ${item.dateTo}`}</Text>
-            <View style={styles.actions}>
-              <Button title="Edit" onPress={() => handleEdit(item.id)} />
-              <Button
-                title="Delete"
-                onPress={() => handleDelete(item.id)}
-                color="red"
-              />
+    <SafeView>
+      <View style={styles.container}>
+        <Text style={styles.title2}>Education</Text>
+        <Pressable onPress={() => navigation.goBack()} style={styles.absolute}>
+          <MaterialCommunityIcons
+            name="arrow-left"
+            color={COLORS.black}
+            size={28}
+          />
+        </Pressable>
+        <FlatList
+          data={education}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.item}>
+              <Text style={styles.title}>{item.degree}</Text>
+              <Text>{item.college}</Text>
+              <Text>{`${item.dateFrom} - ${item.dateTo}`}</Text>
+              <View style={styles.actions}>
+                <Button title="Edit" onPress={() => handleEdit(item.id)} />
+                <Button
+                  title="Delete"
+                  onPress={() => handleDelete(item.id)}
+                  color="red"
+                />
+              </View>
             </View>
+          )}
+        />
+
+        <AppButton
+          title="Add Education"
+          onPress={() => setModalVisible(true)}
+        />
+
+        <Modal visible={isModalVisible} animationType="slide">
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>
+              {editingId ? "Edit Education" : "Add Education"}
+            </Text>
+
+            <Controller
+              control={control}
+              name="degree"
+              render={({
+                field: { onChange, onBlur, value },
+                fieldState: { error },
+              }) => (
+                <View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Degree"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                  {error && (
+                    <Text style={styles.errorText}>{error.message}</Text>
+                  )}
+                </View>
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="college"
+              render={({
+                field: { onChange, onBlur, value },
+                fieldState: { error },
+              }) => (
+                <View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="College"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                  {error && (
+                    <Text style={styles.errorText}>{error.message}</Text>
+                  )}
+                </View>
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="dateFrom"
+              render={({
+                field: { onChange, onBlur, value },
+                fieldState: { error },
+              }) => (
+                <View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Start Date (e.g., 2020-01)"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                  {error && (
+                    <Text style={styles.errorText}>{error.message}</Text>
+                  )}
+                </View>
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="dateTo"
+              render={({
+                field: { onChange, onBlur, value },
+                fieldState: { error },
+              }) => (
+                <View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="End Date (e.g., 2022-12)"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                  {error && (
+                    <Text style={styles.errorText}>{error.message}</Text>
+                  )}
+                </View>
+              )}
+            />
+
+            <AppButton title="Save" onPress={handleSubmit(onSubmit)} />
+
+            <AppButton
+              title="Cancel"
+              onPress={() => setModalVisible(false)}
+              isGradient={false}
+              textColor={COLORS.primary}
+              style={{ borderWidth: 1 }}
+            />
           </View>
-        )}
-      />
-
-      <Button title="Add Education" onPress={() => setModalVisible(true)} />
-
-      <Modal visible={isModalVisible} animationType="slide">
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>
-            {editingId ? "Edit Education" : "Add Education"}
-          </Text>
-
-          <Controller
-            control={control}
-            name="degree"
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => (
-              <View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Degree"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-                {error && <Text style={styles.errorText}>{error.message}</Text>}
-              </View>
-            )}
-          />
-
-          <Controller
-            control={control}
-            name="college"
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => (
-              <View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="College"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-                {error && <Text style={styles.errorText}>{error.message}</Text>}
-              </View>
-            )}
-          />
-
-          <Controller
-            control={control}
-            name="dateFrom"
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => (
-              <View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Start Date (e.g., 2020-01)"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-                {error && <Text style={styles.errorText}>{error.message}</Text>}
-              </View>
-            )}
-          />
-
-          <Controller
-            control={control}
-            name="dateTo"
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => (
-              <View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="End Date (e.g., 2022-12)"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-                {error && <Text style={styles.errorText}>{error.message}</Text>}
-              </View>
-            )}
-          />
-
-          <Button title="Save" onPress={handleSubmit(onSubmit)} />
-          <Button
-            title="Cancel"
-            onPress={() => setModalVisible(false)}
-            color="red"
-          />
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </SafeView>
   );
 };
 
@@ -205,6 +234,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
+    ...SHADOWS.dark,
   },
   title: {
     fontSize: 18,
@@ -236,6 +266,17 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginBottom: 8,
+  },
+  absolute: {
+    position: "absolute",
+    top: 20,
+    left: 20,
+  },
+  title2: {
+    fontFamily: FONTS.semiBold,
+    fontSize: 18,
+    textAlign: "center",
+    marginTop: 5,
   },
 });
 

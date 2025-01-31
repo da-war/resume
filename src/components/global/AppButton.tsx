@@ -12,6 +12,7 @@ interface AppButtonProps {
   loading?: boolean;
   bgColor?: string;
   textColor?: string;
+  isGradient?: boolean;
 }
 
 const AppButton = ({
@@ -22,16 +23,19 @@ const AppButton = ({
   disabled,
   loading,
   bgColor,
-  textColor,
+  textColor = "white",
+  isGradient = true,
 }: AppButtonProps) => {
   return (
     <Pressable
       style={[styles.btnContainer, style, { backgroundColor: bgColor }]}
       onPress={onPress}
     >
-      <Text style={[styles.title, textStyle, { color: "white" }]}>{title}</Text>
+      <Text style={[styles.title, textStyle, { color: textColor }]}>
+        {title}
+      </Text>
 
-      <GradientBackground />
+      {isGradient && <GradientBackground />}
     </Pressable>
   );
 };
@@ -45,6 +49,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+    marginBottom: 10,
   },
   title: {
     fontSize: 16,
