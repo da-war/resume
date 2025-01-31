@@ -3,18 +3,22 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
   Modal,
-  Button,
   StyleSheet,
+  Pressable,
+  Image,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useResumeStore } from "@/src/store/resumeStore";
-import { TextInput } from "react-native";
+import AppButton from "@/src/components/global/AppButton";
+import AppTextInput from "@/src/components/global/AppTextInput";
+import { COLORS, FONTS } from "@/src/constants/theme";
+import SafeView from "@/src/components/global/SafeView";
+import { Entypo, MaterialCommunityIcons } from "@expo/vector-icons";
+import GradientBackground from "@/src/components/global/GradientBackground";
 
-// Define the schema for form validation using Yup
 const courseSchema = yup.object().shape({
   title: yup.string().required("Title is required"),
   dateFrom: yup.string().required("Start date is required"),
@@ -29,12 +33,16 @@ type CourseFormData = {
   courseFrom: string;
 };
 
-const Courses = () => {
-  const { courses, addCourse, updateCourse, removeCourse } = useResumeStore();
+const Courses: React.FC = ({ navigation }) => {
+  const { courses, addCourse, removeCourse } = useResumeStore();
   const [isModalVisible, setModalVisible] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const { control, handleSubmit, reset, setValue } = useForm<CourseFormData>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CourseFormData>({
     resolver: yupResolver(courseSchema),
     defaultValues: {
       title: "",
@@ -45,26 +53,9 @@ const Courses = () => {
   });
 
   const onSubmit = (data: CourseFormData) => {
-    if (editingId) {
-      updateCourse(editingId, data);
-    } else {
-      addCourse(data);
-    }
+    addCourse(data);
     setModalVisible(false);
     reset();
-    setEditingId(null);
-  };
-
-  const handleEdit = (id: string) => {
-    const item = courses.find((course) => course.id === id);
-    if (item) {
-      setValue("title", item.title);
-      setValue("dateFrom", item.dateFrom);
-      setValue("dateTo", item.dateTo);
-      setValue("courseFrom", item.courseFrom);
-      setEditingId(id);
-      setModalVisible(true);
-    }
   };
 
   const handleDelete = (id: string) => {
@@ -72,167 +63,235 @@ const Courses = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={courses}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text>{`${item.dateFrom} - ${item.dateTo}`}</Text>
-            <Text>{item.courseFrom}</Text>
-            <View style={styles.actions}>
-              <Button title="Edit" onPress={() => handleEdit(item.id)} />
-              <Button
-                title="Delete"
-                onPress={() => handleDelete(item.id)}
-                color="red"
-              />
-            </View>
-          </View>
-        )}
-      />
+    <SafeView style={styles.mainContainer}>
+      <Text style={styles.title}>Courses</Text>
+      <Pressable onPress={() => navigation.goBack()} style={styles.absolute}>
+        <MaterialCommunityIcons
+          name="arrow-left"
+          color={COLORS.black}
+          size={28}
+        />
+      </Pressable>
 
-      <Button title="Add Course" onPress={() => setModalVisible(true)} />
+      {courses.length < 1 ? (
+        <View style={styles.imageLoad}>
+          <Image
+            source={require("@/assets/images/hobby.png")}
+            style={styles.image}
+            resizeMode="contain"
+          />
+        </View>
+      ) : (
+        <FlatList
+          data={courses}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={styles.courseBox}>
+              <View style={styles.section}>
+                <View style={styles.iconContainer}>
+                  <GradientBackground />
+                  <Image
+                    source={require("@/assets/icons/education.png")}
+                    style={styles.icon}
+                    resizeMode="contain"
+                  />
+                </View>
+                <Text style={styles.organizationName}>{item.courseFrom}</Text>
+              </View>
+              <View style={styles.spacer} />
+              <View style={styles.section}>
+                <Text style={styles.heading}>Course:</Text>
+                <Text style={styles.text}>{item.title}</Text>
+              </View>
+              <View style={styles.spacer} />
+              <View style={styles.section}>
+                <Text style={styles.heading}>Duration:</Text>
+                <View style={styles.row}>
+                  <Text style={styles.text}>
+                    {item.dateFrom} - {item.dateTo}
+                  </Text>
+                </View>
+              </View>
+              <Pressable
+                style={styles.absoluteDelete}
+                onPress={() => handleDelete(item.id)}
+              >
+                <Entypo
+                  name="circle-with-cross"
+                  size={24}
+                  color={COLORS.error}
+                />
+              </Pressable>
+            </View>
+          )}
+        />
+      )}
+
+      <AppButton title="+ Add" onPress={() => setModalVisible(true)} />
 
       <Modal visible={isModalVisible} animationType="slide">
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>
-            {editingId ? "Edit Course" : "Add Course"}
-          </Text>
+        <View style={{ flex: 1, paddingTop: 100, paddingHorizontal: 20 }}>
+          <Text style={[styles.title, { marginBottom: 40 }]}>Add Course</Text>
+
+          <Controller
+            control={control}
+            name="courseFrom"
+            render={({ field: { onChange, value } }) => (
+              <AppTextInput
+                title="Institution Name"
+                placeholder="Enter Institution Name"
+                defaultValue={value}
+                onChangeText={onChange}
+                autoCapitalize="words"
+                autoCorrect={false}
+              />
+            )}
+          />
 
           <Controller
             control={control}
             name="title"
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => (
-              <View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Title"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-                {error && <Text style={styles.errorText}>{error.message}</Text>}
-              </View>
+            render={({ field: { onChange, value } }) => (
+              <AppTextInput
+                title="Course Title"
+                placeholder="Enter Course Title"
+                defaultValue={value}
+                onChangeText={onChange}
+                autoCapitalize="words"
+                autoCorrect={false}
+              />
             )}
           />
 
           <Controller
             control={control}
             name="dateFrom"
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => (
-              <View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Start Date (e.g., 2020-01)"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-                {error && <Text style={styles.errorText}>{error.message}</Text>}
-              </View>
+            render={({ field: { onChange, value } }) => (
+              <AppTextInput
+                title="Start Date"
+                placeholder="Enter Start Date (e.g., 2023)"
+                defaultValue={value}
+                onChangeText={onChange}
+                icon="calendar"
+                autoCorrect={false}
+                keyboardType="numeric"
+              />
             )}
           />
 
           <Controller
             control={control}
             name="dateTo"
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => (
-              <View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="End Date (e.g., 2022-12)"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-                {error && <Text style={styles.errorText}>{error.message}</Text>}
-              </View>
+            render={({ field: { onChange, value } }) => (
+              <AppTextInput
+                title="End Date"
+                placeholder="Enter End Date (e.g., 2024 or Present)"
+                defaultValue={value}
+                onChangeText={onChange}
+                icon="calendar"
+                autoCorrect={false}
+              />
             )}
           />
 
-          <Controller
-            control={control}
-            name="courseFrom"
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => (
-              <View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Course Provider"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-                {error && <Text style={styles.errorText}>{error.message}</Text>}
-              </View>
-            )}
-          />
+          <AppButton title="Save" onPress={handleSubmit(onSubmit)} />
 
-          <Button title="Save" onPress={handleSubmit(onSubmit)} />
-          <Button
+          <AppButton
             title="Cancel"
-            onPress={() => setModalVisible(false)}
-            color="red"
+            onPress={() => {
+              setModalVisible(false);
+              reset();
+            }}
+            isGradient={false}
+            textColor={COLORS.primary}
+            style={{ borderWidth: 1, marginTop: 10 }}
           />
         </View>
       </Modal>
-    </View>
+    </SafeView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
+  absolute: {
+    position: "absolute",
+    top: 60,
+    left: 20,
   },
-  item: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
+  mainContainer: {
+    paddingHorizontal: 20,
   },
   title: {
+    fontFamily: FONTS.semiBold,
     fontSize: 18,
-    fontWeight: "bold",
+    textAlign: "center",
+    marginTop: 5,
   },
-  actions: {
+  courseBox: {
+    padding: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.lightGray,
+    marginBottom: 10,
+    borderRadius: 15,
+  },
+  icon: {
+    width: 30,
+    height: 30,
+  },
+  imageLoad: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  image: {
+    width: "80%",
+    height: 200,
+  },
+  heading: {
+    fontFamily: FONTS.bold,
+    fontSize: 16,
+    color: COLORS.black,
+  },
+  text: {
+    fontFamily: FONTS.regular,
+    fontSize: 12,
+    color: COLORS.gray,
+    marginTop: 7,
+  },
+  organizationName: {
+    color: COLORS.secondary,
+    fontFamily: FONTS.bold,
+    marginTop: 7,
+  },
+  iconContainer: {
+    width: 45,
+    height: 45,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 7,
+    overflow: "hidden",
+  },
+  section: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  row: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 8,
   },
-  modalContainer: {
-    flex: 1,
-    padding: 16,
-    justifyContent: "center",
+  spacer: {
+    height: 10,
+    backgroundColor: COLORS.black,
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 4,
-    padding: 8,
-    marginBottom: 16,
-  },
-  errorText: {
-    color: "red",
-    marginBottom: 8,
+  absoluteDelete: {
+    position: "absolute",
+    right: 20,
+    top: 20,
   },
 });
 

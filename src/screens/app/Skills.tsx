@@ -31,8 +31,7 @@ const schema = yup.object().shape({
 const Skills: React.FC = () => {
   const navigation = useNavigation();
   const [isOpenModal, setIsOpenModal] = useState(false);
-  const addSkill = useResumeStore((state) => state.addSkill);
-  const skills = useResumeStore((state) => state.skills);
+  const { addSkill, removeSkill, skills } = useResumeStore();
 
   const {
     control,
@@ -62,7 +61,7 @@ const Skills: React.FC = () => {
           />
         </Pressable>
         {skills.length < 1 ? (
-          <View style={styles.imageLoad}>
+          <View>
             <Image
               source={require("@/assets/images/hobby.png")}
               style={styles.image}
@@ -85,6 +84,13 @@ const Skills: React.FC = () => {
                     <GradientBackground />
                   </View>
                   <Text style={styles.titleHobby}>{item}</Text>
+                  <Pressable onPress={() => removeSkill(item)}>
+                    <MaterialCommunityIcons
+                      name="delete"
+                      color="black"
+                      size={24}
+                    />
+                  </Pressable>
                 </View>
               )}
             />
@@ -102,7 +108,7 @@ const Skills: React.FC = () => {
             render={({ field: { onChange, value } }) => (
               <AppTextInput
                 title="Enter Skill"
-                value={value}
+                defaultValue={value}
                 onChangeText={onChange}
                 placeholder="Enter Your Skill"
                 icon="account"
@@ -133,16 +139,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: "center",
     marginTop: 5,
+    marginBottom: 30,
   },
   image: {
     width: "75%",
     height: "70%",
     alignSelf: "center",
-  },
-  itemIconContainer: {
-    padding: 10,
-    width: "20%",
-    flexDirection: "row",
   },
   listContainer: {
     flex: 1,
@@ -165,5 +167,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: FONTS.semiBold,
     marginLeft: 15,
+    flex: 1,
   },
 });

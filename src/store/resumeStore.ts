@@ -11,10 +11,11 @@ interface ResumeStore {
     photo: string;
     about: string;
   };
-  summary: {
+  summaries: {
+    id: string;
     title: string;
     summary: string;
-  };
+  }[];
   education: {
     id: string;
     degree: string;
@@ -49,7 +50,9 @@ interface ResumeStore {
   updatePersonalInfo: (info: ResumeStore['personalInfo']) => void;
 
   // Summary operations
-  updateSummary: (summary: ResumeStore['summary']) => void;
+  addSummary: (summary: Omit<ResumeStore['summaries'][0], 'id'>) => void;
+  updateSummary: (id: string, summary: Partial<Omit<ResumeStore['summaries'][0], 'id'>>) => void;
+  removeSummary: (id: string) => void;
 
   // Education operations
   addEducation: (education: Omit<ResumeStore['education'][0], 'id'>) => void;
@@ -96,7 +99,7 @@ export const useResumeStore = create<ResumeStore>()(
     (set) => ({
       // Initial state
       personalInfo: { name: '', email: '', phone: '', photo: '', about: '' },
-      summary: { title: '', summary: '' },
+      summaries: [],
       education: [],
       experiences: [],
       skills: [],
@@ -110,7 +113,20 @@ export const useResumeStore = create<ResumeStore>()(
       updatePersonalInfo: (info) => set({ personalInfo: info }),
 
       // Summary operations
-      updateSummary: (summary) => set({ summary }),
+      addSummary: (summary) =>
+        set((state) => ({
+          summaries: [...state.summaries, { id: Date.now().toString(), ...summary }],
+        })),
+      updateSummary: (id, updatedSummary) =>
+        set((state) => ({
+          summaries: state.summaries.map((s) =>
+            s.id === id ? { ...s, ...updatedSummary } : s
+          ),
+        })),
+      removeSummary: (id) =>
+        set((state) => ({
+          summaries: state.summaries.filter((s) => s.id !== id),
+        })),
 
       // Education operations
       addEducation: (education) =>
@@ -183,7 +199,7 @@ export const useResumeStore = create<ResumeStore>()(
       // Reset operation
       resetStore: () => set({
         personalInfo: { name: '', email: '', phone: '', photo: '', about: '' },
-        summary: { title: '', summary: '' },
+        summaries: [],
         education: [],
         experiences: [],
         skills: [],

@@ -3,23 +3,22 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
   Modal,
-  Button,
   StyleSheet,
-  TextInput,
   Pressable,
+  Image,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useResumeStore } from "@/src/store/resumeStore";
 import AppButton from "@/src/components/global/AppButton";
-import { COLORS, FONTS, SHADOWS } from "@/src/constants/theme";
+import AppTextInput from "@/src/components/global/AppTextInput";
+import { COLORS, FONTS } from "@/src/constants/theme";
 import SafeView from "@/src/components/global/SafeView";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Entypo, MaterialCommunityIcons } from "@expo/vector-icons";
+import GradientBackground from "@/src/components/global/GradientBackground";
 
-// Define the schema for form validation using Yup
 const educationSchema = yup.object().shape({
   degree: yup.string().required("Degree is required"),
   college: yup.string().required("College is required"),
@@ -34,45 +33,35 @@ type EducationFormData = {
   dateTo: string;
 };
 
-const Education = ({ navigation }) => {
-  const { education, addEducation, updateEducation, removeEducation } =
-    useResumeStore();
+const Education: React.FC = ({ navigation }) => {
+  const { education, addEducation, removeEducation } = useResumeStore();
   const [isModalVisible, setModalVisible] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const { control, handleSubmit, reset, setValue } = useForm<EducationFormData>(
-    {
-      resolver: yupResolver(educationSchema),
-      defaultValues: {
-        degree: "",
-        college: "",
-        dateFrom: "",
-        dateTo: "",
-      },
-    }
-  );
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<EducationFormData>({
+    resolver: yupResolver(educationSchema),
+    defaultValues: {
+      degree: "",
+      college: "",
+      dateFrom: "",
+      dateTo: "",
+    },
+  });
 
   const onSubmit = (data: EducationFormData) => {
-    if (editingId) {
-      updateEducation(editingId, data);
-    } else {
-      addEducation(data);
-    }
+    const formattedData = {
+      degree: data.degree,
+      college: data.college,
+      dateFrom: data.dateFrom,
+      dateTo: data.dateTo,
+    };
+    addEducation(formattedData);
     setModalVisible(false);
     reset();
-    setEditingId(null);
-  };
-
-  const handleEdit = (id: string) => {
-    const item = education.find((edu) => edu.id === id);
-    if (item) {
-      setValue("degree", item.degree);
-      setValue("college", item.college);
-      setValue("dateFrom", item.dateFrom);
-      setValue("dateTo", item.dateTo);
-      setEditingId(id);
-      setModalVisible(true);
-    }
   };
 
   const handleDelete = (id: string) => {
@@ -80,203 +69,237 @@ const Education = ({ navigation }) => {
   };
 
   return (
-    <SafeView>
-      <View style={styles.container}>
-        <Text style={styles.title2}>Education</Text>
-        <Pressable onPress={() => navigation.goBack()} style={styles.absolute}>
-          <MaterialCommunityIcons
-            name="arrow-left"
-            color={COLORS.black}
-            size={28}
+    <SafeView style={styles.mainContainer}>
+      <Text style={styles.title}>Education</Text>
+      <Pressable onPress={() => navigation.goBack()} style={styles.absolute}>
+        <MaterialCommunityIcons
+          name="arrow-left"
+          color={COLORS.black}
+          size={28}
+        />
+      </Pressable>
+
+      {education.length < 1 ? (
+        <View style={styles.imageLoad}>
+          <Image
+            source={require("@/assets/images/hobby.png")}
+            style={styles.image}
+            resizeMode="contain"
           />
-        </Pressable>
+        </View>
+      ) : (
         <FlatList
           data={education}
           keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Text style={styles.title}>{item.degree}</Text>
-              <Text>{item.college}</Text>
-              <Text>{`${item.dateFrom} - ${item.dateTo}`}</Text>
-              <View style={styles.actions}>
-                <Button title="Edit" onPress={() => handleEdit(item.id)} />
-                <Button
-                  title="Delete"
-                  onPress={() => handleDelete(item.id)}
-                  color="red"
-                />
+            <View style={styles.experienceBox}>
+              <View style={styles.section}>
+                <View style={styles.iconContainer}>
+                  <GradientBackground />
+                  <Image
+                    source={require("@/assets/icons/education.png")}
+                    style={styles.icon}
+                    resizeMode="contain"
+                  />
+                </View>
+                <Text style={styles.organizationName}>{item.college}</Text>
               </View>
+              <View style={styles.spacer} />
+              <View style={styles.section}>
+                <Text style={styles.heading}>Degree:</Text>
+                <Text style={styles.text}>{item.degree}</Text>
+              </View>
+              <View style={styles.spacer} />
+              <View style={styles.section}>
+                <Text style={styles.heading}>Duration:</Text>
+                <View style={styles.row}>
+                  <Text style={styles.text}>
+                    {item.dateFrom} - {item.dateTo}
+                  </Text>
+                </View>
+              </View>
+              <Pressable
+                style={styles.absoluteDelete}
+                onPress={() => handleDelete(item.id)}
+              >
+                <Entypo
+                  name="circle-with-cross"
+                  size={24}
+                  color={COLORS.error}
+                />
+              </Pressable>
             </View>
           )}
         />
+      )}
 
-        <AppButton
-          title="Add Education"
-          onPress={() => setModalVisible(true)}
-        />
+      <AppButton title="+ Add" onPress={() => setModalVisible(true)} />
 
-        <Modal visible={isModalVisible} animationType="slide">
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>
-              {editingId ? "Edit Education" : "Add Education"}
-            </Text>
+      <Modal visible={isModalVisible} animationType="slide">
+        <View style={{ flex: 1, paddingTop: 100, paddingHorizontal: 20 }}>
+          <Text style={[styles.title, { marginBottom: 40 }]}>
+            Add Education
+          </Text>
 
-            <Controller
-              control={control}
-              name="degree"
-              render={({
-                field: { onChange, onBlur, value },
-                fieldState: { error },
-              }) => (
-                <View>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Degree"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                  {error && (
-                    <Text style={styles.errorText}>{error.message}</Text>
-                  )}
-                </View>
-              )}
-            />
+          <Controller
+            control={control}
+            name="college"
+            render={({ field: { onChange, value } }) => (
+              <AppTextInput
+                title="Institution Name"
+                placeholder="Enter Institution Name"
+                defaultValue={value}
+                onChangeText={onChange}
+                autoCapitalize="words"
+                autoCorrect={false}
+              />
+            )}
+          />
 
-            <Controller
-              control={control}
-              name="college"
-              render={({
-                field: { onChange, onBlur, value },
-                fieldState: { error },
-              }) => (
-                <View>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="College"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                  {error && (
-                    <Text style={styles.errorText}>{error.message}</Text>
-                  )}
-                </View>
-              )}
-            />
+          <Controller
+            control={control}
+            name="degree"
+            render={({ field: { onChange, value } }) => (
+              <AppTextInput
+                title="Degree"
+                placeholder="Enter Degree"
+                defaultValue={value}
+                onChangeText={onChange}
+                autoCapitalize="words"
+                autoCorrect={false}
+              />
+            )}
+          />
 
-            <Controller
-              control={control}
-              name="dateFrom"
-              render={({
-                field: { onChange, onBlur, value },
-                fieldState: { error },
-              }) => (
-                <View>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Start Date (e.g., 2020-01)"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                  {error && (
-                    <Text style={styles.errorText}>{error.message}</Text>
-                  )}
-                </View>
-              )}
-            />
+          <Controller
+            control={control}
+            name="dateFrom"
+            render={({ field: { onChange, value } }) => (
+              <AppTextInput
+                title="Start Date"
+                placeholder="Enter Start Date (e.g., 2020)"
+                defaultValue={value}
+                onChangeText={onChange}
+                icon="calendar"
+                autoCorrect={false}
+                keyboardType="numeric"
+              />
+            )}
+          />
 
-            <Controller
-              control={control}
-              name="dateTo"
-              render={({
-                field: { onChange, onBlur, value },
-                fieldState: { error },
-              }) => (
-                <View>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="End Date (e.g., 2022-12)"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                  {error && (
-                    <Text style={styles.errorText}>{error.message}</Text>
-                  )}
-                </View>
-              )}
-            />
+          <Controller
+            control={control}
+            name="dateTo"
+            render={({ field: { onChange, value } }) => (
+              <AppTextInput
+                title="End Date"
+                placeholder="Enter End Date (e.g., 2024 or Present)"
+                defaultValue={value}
+                onChangeText={onChange}
+                icon="calendar"
+                autoCorrect={false}
+              />
+            )}
+          />
 
-            <AppButton title="Save" onPress={handleSubmit(onSubmit)} />
+          <AppButton title="Save" onPress={handleSubmit(onSubmit)} />
 
-            <AppButton
-              title="Cancel"
-              onPress={() => setModalVisible(false)}
-              isGradient={false}
-              textColor={COLORS.primary}
-              style={{ borderWidth: 1 }}
-            />
-          </View>
-        </Modal>
-      </View>
+          <AppButton
+            title="Cancel"
+            onPress={() => {
+              setModalVisible(false);
+              reset();
+            }}
+            isGradient={false}
+            textColor={COLORS.primary}
+            style={{ borderWidth: 1, marginTop: 10 }}
+          />
+        </View>
+      </Modal>
     </SafeView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  item: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-    ...SHADOWS.dark,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
-  },
-  modalContainer: {
-    flex: 1,
-    padding: 16,
-    justifyContent: "center",
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 4,
-    padding: 8,
-    marginBottom: 16,
-  },
-  errorText: {
-    color: "red",
-    marginBottom: 8,
-  },
   absolute: {
     position: "absolute",
-    top: 20,
+    top: 60,
     left: 20,
   },
-  title2: {
+  mainContainer: {
+    paddingHorizontal: 20,
+  },
+  title: {
     fontFamily: FONTS.semiBold,
     fontSize: 18,
     textAlign: "center",
     marginTop: 5,
+  },
+  experienceBox: {
+    padding: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.lightGray,
+    marginBottom: 10,
+    borderRadius: 15,
+  },
+  icon: {
+    width: 30,
+    height: 30,
+  },
+  imageLoad: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  image: {
+    width: "80%",
+    height: 200,
+  },
+  heading: {
+    fontFamily: FONTS.bold,
+    fontSize: 16,
+    color: COLORS.black,
+  },
+  text: {
+    fontFamily: FONTS.regular,
+    fontSize: 12,
+    color: COLORS.gray,
+    marginTop: 7,
+  },
+  organizationName: {
+    color: COLORS.secondary,
+    fontFamily: FONTS.bold,
+    marginTop: 7,
+  },
+  iconContainer: {
+    width: 45,
+    height: 45,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 7,
+    overflow: "hidden",
+  },
+  section: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  spacer: {
+    height: 10,
+    backgroundColor: COLORS.black,
+  },
+  absoluteDelete: {
+    position: "absolute",
+    right: 20,
+    top: 20,
   },
 });
 

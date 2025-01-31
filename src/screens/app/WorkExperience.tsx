@@ -1,202 +1,207 @@
-import {
-  FlatList,
-  Image,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
 import React, { useState } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  Modal,
+  StyleSheet,
+  Pressable,
+  Image,
+} from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import SafeView from "@/src/components/global/SafeView";
-import { Entypo, MaterialCommunityIcons } from "@expo/vector-icons";
-import { COLORS, FONTS } from "@/src/constants/theme";
-import { useNavigation } from "@react-navigation/native";
+import { useResumeStore } from "@/src/store/resumeStore";
 import AppButton from "@/src/components/global/AppButton";
 import AppTextInput from "@/src/components/global/AppTextInput";
+import { COLORS, FONTS } from "@/src/constants/theme";
+import SafeView from "@/src/components/global/SafeView";
+import { Entypo, MaterialCommunityIcons } from "@expo/vector-icons";
 import GradientBackground from "@/src/components/global/GradientBackground";
-import { useResumeStore } from "@/src/store/resumeStore";
 
-const schema = yup.object().shape({
-  company: yup.string().required("Organization Name is required"),
-  position: yup.string().required("Designation is required"),
-  date: yup.string().required("Start Date is required"),
-  description: yup.string().required("Description is required"),
+const educationSchema = yup.object().shape({
+  degree: yup.string().required("Degree is required"),
+  college: yup.string().required("College is required"),
+  dateFrom: yup.string().required("Start date is required"),
+  dateTo: yup.string().required("End date is required"),
 });
 
-const WorkExperience: React.FC = () => {
-  const navigation = useNavigation();
-  const [isOpenModal, setIsOpenModal] = useState(false);
-  const addExperience = useResumeStore((state) => state.addExperience);
-  const experiences = useResumeStore((state) => state.experiences);
-  const deleteExperience = useResumeStore((state) => state.removeExperience);
+type EducationFormData = {
+  degree: string;
+  college: string;
+  dateFrom: string;
+  dateTo: string;
+};
+
+const Education = ({ navigation }) => {
+  const { education, addEducation, removeEducation } = useResumeStore();
+  const [isModalVisible, setModalVisible] = useState(false);
 
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
+  } = useForm<EducationFormData>({
+    resolver: yupResolver(educationSchema),
     defaultValues: {
-      company: "",
-      position: "",
-      date: "",
-      description: "",
+      degree: "",
+      college: "",
+      dateFrom: "",
+      dateTo: "",
     },
   });
 
-  const handleExperienceSave = (data: any) => {
-    addExperience(data);
+  const onSubmit = (data: EducationFormData) => {
+    const formattedData = {
+      degree: data.degree,
+      college: data.college,
+      dateFrom: data.dateFrom,
+      dateTo: data.dateTo,
+    };
+    addEducation(formattedData);
+    setModalVisible(false);
     reset();
-    setIsOpenModal(false);
   };
 
-  const deleteItem = (item: any) => {
-    deleteExperience(item.id);
+  const handleDelete = (id: string) => {
+    removeEducation(id);
   };
 
   return (
-    <>
-      <SafeView style={styles.mainContainer}>
-        <Text style={styles.title}>Work Experiences</Text>
-        <Pressable onPress={() => navigation.goBack()} style={styles.absolute}>
-          <MaterialCommunityIcons
-            name="arrow-left"
-            color={COLORS.black}
-            size={28}
-          />
-        </Pressable>
-        {experiences.length < 1 ? (
-          <View style={styles.imageLoad}>
-            <Image
-              source={require("@/assets/images/hobby.png")}
-              style={styles.image}
-              resizeMode="contain"
-            />
-          </View>
-        ) : (
-          <FlatList
-            data={experiences}
-            keyExtractor={(item, index) => index.toString()}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <View style={styles.experienceBox}>
-                <View style={styles.section}>
-                  <View style={styles.iconContainer}>
-                    <GradientBackground />
-                    <Image
-                      source={require("@/assets/icons/company.png")}
-                      style={styles.icon}
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <Text style={styles.organizationName}>{item.company}</Text>
-                </View>
-                <View style={styles.spacer} />
-                <View style={styles.section}>
-                  <Text style={styles.heading}>Designation:</Text>
-                  <Text style={styles.text}>{item.position}</Text>
-                </View>
-                <View style={styles.section}>
-                  <Text style={styles.heading}>Description:</Text>
-                  <Text style={styles.text}>{item.description}</Text>
-                </View>
-                <View style={styles.spacer} />
-                <View style={styles.section}>
-                  <Text style={styles.heading}>Time:</Text>
-                  <View style={styles.row}>
-                    <Text style={styles.text}>{item.date}</Text>
-                  </View>
-                </View>
-                <Pressable
-                  style={styles.absoluteDelete}
-                  onPress={() => deleteItem(item)}
-                >
-                  <Entypo
-                    name="circle-with-cross"
-                    size={24}
-                    color={COLORS.error}
-                  />
-                </Pressable>
-              </View>
-            )}
-          />
-        )}
+    <SafeView style={styles.mainContainer}>
+      <Text style={styles.title}>Education</Text>
+      <Pressable onPress={() => navigation.goBack()} style={styles.absolute}>
+        <MaterialCommunityIcons
+          name="arrow-left"
+          color={COLORS.black}
+          size={28}
+        />
+      </Pressable>
 
-        <AppButton title="+ Add" onPress={() => setIsOpenModal(true)} />
-      </SafeView>
-      <Modal visible={isOpenModal} animationType="slide">
+      {education.length < 1 ? (
+        <View style={styles.imageLoad}>
+          <Image
+            source={require("@/assets/images/hobby.png")}
+            style={styles.image}
+            resizeMode="contain"
+          />
+        </View>
+      ) : (
+        <FlatList
+          data={education}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={styles.experienceBox}>
+              <View style={styles.section}>
+                <View style={styles.iconContainer}>
+                  <GradientBackground />
+                  <Image
+                    source={require("@/assets/icons/education.png")}
+                    style={styles.icon}
+                    resizeMode="contain"
+                  />
+                </View>
+                <Text style={styles.organizationName}>{item.college}</Text>
+              </View>
+              <View style={styles.spacer} />
+              <View style={styles.section}>
+                <Text style={styles.heading}>Degree:</Text>
+                <Text style={styles.text}>{item.degree}</Text>
+              </View>
+              <View style={styles.spacer} />
+              <View style={styles.section}>
+                <Text style={styles.heading}>Duration:</Text>
+                <View style={styles.row}>
+                  <Text style={styles.text}>
+                    {item.dateFrom} - {item.dateTo}
+                  </Text>
+                </View>
+              </View>
+              <Pressable
+                style={styles.absoluteDelete}
+                onPress={() => handleDelete(item.id)}
+              >
+                <Entypo
+                  name="circle-with-cross"
+                  size={24}
+                  color={COLORS.error}
+                />
+              </Pressable>
+            </View>
+          )}
+        />
+      )}
+
+      <AppButton title="+ Add" onPress={() => setModalVisible(true)} />
+
+      <Modal visible={isModalVisible} animationType="slide">
         <View style={{ flex: 1, paddingTop: 100, paddingHorizontal: 20 }}>
           <Text style={[styles.title, { marginBottom: 40 }]}>
-            Add Work Experience
+            Add Education
           </Text>
+
           <Controller
             control={control}
-            name="company"
+            name="college"
             render={({ field: { onChange, value } }) => (
               <AppTextInput
-                placeholder="Enter Organization Name"
+                placeholder="Enter Institution Name"
                 defaultValue={value}
                 onChangeText={onChange}
-                errorMessage={errors.company?.message}
+                errorMessage={errors.college?.message}
               />
             )}
           />
+
           <Controller
             control={control}
-            name="position"
+            name="degree"
             render={({ field: { onChange, value } }) => (
               <AppTextInput
-                placeholder="Enter Designation"
+                placeholder="Enter Degree"
                 defaultValue={value}
                 onChangeText={onChange}
-                errorMessage={errors.position?.message}
+                errorMessage={errors.degree?.message}
               />
             )}
           />
+
           <Controller
             control={control}
-            name="date"
+            name="dateFrom"
             render={({ field: { onChange, value } }) => (
               <AppTextInput
-                placeholder="June 2022 - June 2024/Present"
+                placeholder="Start Date (e.g., 2020)"
                 defaultValue={value}
                 onChangeText={onChange}
                 icon="calendar"
-                errorMessage={errors.date?.message}
+                errorMessage={errors.dateFrom?.message}
               />
             )}
           />
 
           <Controller
             control={control}
-            name="description"
+            name="dateTo"
             render={({ field: { onChange, value } }) => (
               <AppTextInput
-                placeholder="Enter Description"
+                placeholder="End Date (e.g., 2024/Present)"
                 defaultValue={value}
-                multiline
-                numberOfLines={3}
                 onChangeText={onChange}
-                errorMessage={errors.description?.message}
+                icon="calendar"
+                errorMessage={errors.dateTo?.message}
               />
             )}
           />
-          <AppButton
-            title="Save"
-            onPress={handleSubmit(handleExperienceSave)}
-          />
+
+          <AppButton title="Save" onPress={handleSubmit(onSubmit)} />
         </View>
       </Modal>
-    </>
+    </SafeView>
   );
 };
-
-export default WorkExperience;
 
 const styles = StyleSheet.create({
   absolute: {
@@ -226,9 +231,14 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
   },
-
-  dataContainer: {
-    marginTop: 30,
+  imageLoad: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  image: {
+    width: "80%",
+    height: 200,
   },
   heading: {
     fontFamily: FONTS.bold,
@@ -254,10 +264,6 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     overflow: "hidden",
   },
-  sectionContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
   section: {
     justifyContent: "center",
     alignItems: "center",
@@ -278,3 +284,5 @@ const styles = StyleSheet.create({
     top: 20,
   },
 });
+
+export default Education;
