@@ -1,4 +1,4 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, Share, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import SafeView from "@/src/components/global/SafeView";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -11,6 +11,17 @@ const Manage = () => {
   const navigaiton = useNavigation();
 
   const personalInfo = useResumeStore((state) => state.personalInfo);
+
+  const shareApp = async () => {
+    try {
+      await Share.share({
+        message:
+          "Check out this amazing Resume App! Download it now: https://resumeapp.com",
+      });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
 
   return (
     <SafeView style={styles.container}>
@@ -56,7 +67,7 @@ const Manage = () => {
         <SettingCard
           title="Rate Us"
           icon="star"
-          onPress={() => console.log("Hello")}
+          onPress={() => navigaiton.navigate("rate")}
         />
         <View
           style={{ height: 1, backgroundColor: COLORS.gray, opacity: 0.3 }}
@@ -64,7 +75,7 @@ const Manage = () => {
         <SettingCard
           title="Share with Friends"
           icon="share"
-          onPress={() => console.log("Hello")}
+          onPress={() => shareApp()}
         />
         <View
           style={{ height: 1, backgroundColor: COLORS.gray, opacity: 0.3 }}
@@ -72,7 +83,7 @@ const Manage = () => {
         <SettingCard
           title="Privacy Policy"
           icon="security"
-          onPress={() => console.log("Hello")}
+          onPress={() => navigaiton.navigate("privacy")}
         />
         <View
           style={{ height: 1, backgroundColor: COLORS.gray, opacity: 0.3 }}
@@ -80,7 +91,7 @@ const Manage = () => {
         <SettingCard
           title="Help"
           icon="help"
-          onPress={() => console.log("Hello")}
+          onPress={() => navigaiton.navigate("help")}
         />
         <View
           style={{ height: 1, backgroundColor: COLORS.gray, opacity: 0.3 }}
@@ -88,7 +99,7 @@ const Manage = () => {
         <SettingCard
           title="Terms of Use"
           icon="book"
-          onPress={() => console.log("Hello")}
+          onPress={() => navigaiton.navigate("terms")}
         />
       </View>
 

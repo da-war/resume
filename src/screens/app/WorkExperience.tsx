@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Pressable,
   Image,
+  Switch,
+  ScrollView,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -19,58 +21,72 @@ import SafeView from "@/src/components/global/SafeView";
 import { Entypo, MaterialCommunityIcons } from "@expo/vector-icons";
 import GradientBackground from "@/src/components/global/GradientBackground";
 
-const educationSchema = yup.object().shape({
-  degree: yup.string().required("Degree is required"),
-  college: yup.string().required("College is required"),
+const workExperienceSchema = yup.object().shape({
+  company: yup.string().required("Company is required"),
+  position: yup.string().required("Position is required"),
   dateFrom: yup.string().required("Start date is required"),
-  dateTo: yup.string().required("End date is required"),
+  dateTo: yup.string().when("isCurrentEmployment", {
+    is: false,
+    then: yup.string().required("End date is required"),
+  }),
+  description: yup.string().required("Job description is required"),
 });
 
-type EducationFormData = {
-  degree: string;
-  college: string;
+type WorkExperienceFormData = {
+  company: string;
+  position: string;
   dateFrom: string;
   dateTo: string;
+  description: string;
+  isCurrentEmployment?: boolean;
 };
 
-const Education = ({ navigation }) => {
-  const { education, addEducation, removeEducation } = useResumeStore();
+const WorkExperience: React.FC = ({ navigation }) => {
+  const { experiences, addExperience, removeExperience } = useResumeStore();
   const [isModalVisible, setModalVisible] = useState(false);
 
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
-  } = useForm<EducationFormData>({
-    resolver: yupResolver(educationSchema),
+  } = useForm<WorkExperienceFormData>({
+    resolver: yupResolver(workExperienceSchema),
     defaultValues: {
-      degree: "",
-      college: "",
+      company: "",
+      position: "",
       dateFrom: "",
       dateTo: "",
+      description: "",
+      isCurrentEmployment: false,
     },
   });
 
-  const onSubmit = (data: EducationFormData) => {
+  const isCurrentEmployment = watch("isCurrentEmployment");
+
+  const onSubmit = (data: WorkExperienceFormData) => {
     const formattedData = {
-      degree: data.degree,
-      college: data.college,
-      dateFrom: data.dateFrom,
-      dateTo: data.dateTo,
+      company: data.company,
+      position: data.position,
+      date: `${data.dateFrom} - ${
+        isCurrentEmployment ? "Present" : data.dateTo
+      }`,
+      description: data.description,
     };
-    addEducation(formattedData);
+    addExperience(formattedData);
     setModalVisible(false);
     reset();
   };
 
   const handleDelete = (id: string) => {
-    removeEducation(id);
+    removeExperience(id);
   };
 
   return (
     <SafeView style={styles.mainContainer}>
-      <Text style={styles.title}>Education</Text>
+      <Text style={styles.title}>Work Experience</Text>
       <Pressable onPress={() => navigation.goBack()} style={styles.absolute}>
         <MaterialCommunityIcons
           name="arrow-left"
@@ -79,7 +95,9 @@ const Education = ({ navigation }) => {
         />
       </Pressable>
 
-      {education.length < 1 ? (
+      <View style={{ height: 30 }} />
+
+      {experiences.length < 1 ? (
         <View style={styles.imageLoad}>
           <Image
             source={require("@/assets/images/hobby.png")}
@@ -89,7 +107,7 @@ const Education = ({ navigation }) => {
         </View>
       ) : (
         <FlatList
-          data={education}
+          data={experiences}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
@@ -98,26 +116,29 @@ const Education = ({ navigation }) => {
                 <View style={styles.iconContainer}>
                   <GradientBackground />
                   <Image
-                    source={require("@/assets/icons/education.png")}
+                    source={require("@/assets/icons/work.png")}
                     style={styles.icon}
                     resizeMode="contain"
                   />
                 </View>
-                <Text style={styles.organizationName}>{item.college}</Text>
+                <Text style={styles.organizationName}>{item.company}</Text>
               </View>
               <View style={styles.spacer} />
               <View style={styles.section}>
-                <Text style={styles.heading}>Degree:</Text>
-                <Text style={styles.text}>{item.degree}</Text>
+                <Text style={styles.heading}>Position:</Text>
+                <Text style={styles.text}>{item.position}</Text>
               </View>
               <View style={styles.spacer} />
               <View style={styles.section}>
                 <Text style={styles.heading}>Duration:</Text>
                 <View style={styles.row}>
-                  <Text style={styles.text}>
-                    {item.dateFrom} - {item.dateTo}
-                  </Text>
+                  <Text style={styles.text}>{item.date}</Text>
                 </View>
+              </View>
+              <View style={styles.spacer} />
+              <View style={styles.section}>
+                <Text style={styles.heading}>Description:</Text>
+                <Text style={styles.text}>{item.description}</Text>
               </View>
               <Pressable
                 style={styles.absoluteDelete}
@@ -138,65 +159,131 @@ const Education = ({ navigation }) => {
 
       <Modal visible={isModalVisible} animationType="slide">
         <View style={{ flex: 1, paddingTop: 100, paddingHorizontal: 20 }}>
-          <Text style={[styles.title, { marginBottom: 40 }]}>
-            Add Education
-          </Text>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Pressable onPress={() => setModalVisible(false)}>
+              <Entypo name="circle-with-cross" size={24} color="black" />
+            </Pressable>
+            <Text style={[styles.title, { marginBottom: 40 }]}>
+              Add Work Experience
+            </Text>
 
-          <Controller
-            control={control}
-            name="college"
-            render={({ field: { onChange, value } }) => (
-              <AppTextInput
-                placeholder="Enter Institution Name"
-                defaultValue={value}
-                onChangeText={onChange}
-                errorMessage={errors.college?.message}
+            <Controller
+              control={control}
+              name="company"
+              render={({ field: { onChange, value } }) => (
+                <AppTextInput
+                  title="Company Name"
+                  placeholder="Enter Company Name"
+                  defaultValue={value}
+                  onChangeText={onChange}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="position"
+              render={({ field: { onChange, value } }) => (
+                <AppTextInput
+                  title="Position"
+                  placeholder="Enter Position"
+                  defaultValue={value}
+                  onChangeText={onChange}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="dateFrom"
+              render={({ field: { onChange, value } }) => (
+                <AppTextInput
+                  title="Start Date"
+                  placeholder="Enter Start Date (e.g., 2020)"
+                  defaultValue={value}
+                  onChangeText={onChange}
+                  icon="calendar"
+                  autoCorrect={false}
+                  keyboardType="numeric"
+                />
+              )}
+            />
+
+            {!isCurrentEmployment && (
+              <Controller
+                control={control}
+                name="dateTo"
+                render={({ field: { onChange, value } }) => (
+                  <AppTextInput
+                    title="End Date"
+                    placeholder="Enter End Date (e.g., 2024)"
+                    defaultValue={value}
+                    onChangeText={onChange}
+                    icon="calendar"
+                    autoCorrect={false}
+                    keyboardType="numeric"
+                  />
+                )}
               />
             )}
-          />
 
-          <Controller
-            control={control}
-            name="degree"
-            render={({ field: { onChange, value } }) => (
-              <AppTextInput
-                placeholder="Enter Degree"
-                defaultValue={value}
-                onChangeText={onChange}
-                errorMessage={errors.degree?.message}
+            <View style={styles.checkboxContainer}>
+              <Text style={styles.checkboxLabel}>Currently Employed</Text>
+              <Controller
+                control={control}
+                name="isCurrentEmployment"
+                render={({ field: { value, onChange } }) => (
+                  <Switch
+                    value={value}
+                    onValueChange={(newValue) => {
+                      onChange(newValue);
+                      if (newValue) {
+                        setValue("dateTo", "");
+                      }
+                    }}
+                    trackColor={{
+                      false: COLORS.lightGray,
+                      true: COLORS.primary,
+                    }}
+                    thumbColor={value ? COLORS.white : COLORS.gray}
+                  />
+                )}
               />
-            )}
-          />
+            </View>
 
-          <Controller
-            control={control}
-            name="dateFrom"
-            render={({ field: { onChange, value } }) => (
-              <AppTextInput
-                placeholder="Start Date (e.g., 2020)"
-                defaultValue={value}
-                onChangeText={onChange}
-                icon="calendar"
-                errorMessage={errors.dateFrom?.message}
-              />
-            )}
-          />
+            <Controller
+              control={control}
+              name="description"
+              render={({ field: { onChange, value } }) => (
+                <AppTextInput
+                  title="Job Description"
+                  placeholder="Describe your role and responsibilities"
+                  defaultValue={value}
+                  onChangeText={onChange}
+                  multiline
+                  numberOfLines={4}
+                  style={{ height: 100 }}
+                />
+              )}
+            />
 
-          <Controller
-            control={control}
-            name="dateTo"
-            render={({ field: { onChange, value } }) => (
-              <AppTextInput
-                placeholder="End Date (e.g., 2024/Present)"
-                defaultValue={value}
-                onChangeText={onChange}
-                icon="calendar"
-                errorMessage={errors.dateTo?.message}
-              />
-            )}
-          />
+            <AppButton title="Save" onPress={handleSubmit(onSubmit)} />
 
-          <AppButton title="Save" onPress={handleSubmit(onSubmit)} />
+            <AppButton
+              title="Cancel"
+              onPress={() => {
+                setModalVisible(false);
+                reset();
+              }}
+              isGradient={false}
+              textColor={COLORS.primary}
+              style={{ borderWidth: 1, marginTop: 10 }}
+            />
+          </ScrollView>
         </View>
       </Modal>
     </SafeView>
@@ -283,6 +370,17 @@ const styles = StyleSheet.create({
     right: 20,
     top: 20,
   },
+  checkboxContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  checkboxLabel: {
+    fontFamily: FONTS.regular,
+    fontSize: 14,
+    color: COLORS.black,
+  },
 });
 
-export default Education;
+export default WorkExperience;

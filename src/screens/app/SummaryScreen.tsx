@@ -97,6 +97,9 @@ const Summaries: React.FC = () => {
       </SafeView>
       <Modal visible={isOpenModal} animationType="slide">
         <View style={{ flex: 1, paddingTop: 100, paddingHorizontal: 20 }}>
+          <Pressable onPress={() => setIsOpenModal(false)}>
+            <Entypo name="circle-with-cross" size={24} color="black" />
+          </Pressable>
           <Text style={[styles.title, { marginBottom: 40 }]}>Add Summary</Text>
           <Controller
             control={control}

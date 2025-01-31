@@ -9,6 +9,7 @@ import {
   Platform,
   StyleSheet,
   Text,
+  FlatList,
 } from "react-native";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -22,10 +23,6 @@ import { COLORS, FONTS } from "@/src/constants/theme";
 import AppButton from "@/src/components/global/AppButton";
 import GradientBackground from "@/src/components/global/GradientBackground";
 import AppTextInput from "@/src/components/global/AppTextInput";
-
-// Components
-
-// Stores and Styles
 
 // Validation Schema
 const PersonalInfoSchema = Yup.object().shape({
@@ -54,17 +51,20 @@ type PersonalInfoFormData = {
 
 const PersonalProfile: React.FC = () => {
   const navigation = useNavigation();
-  const { personalInfo, updatePersonalInfo } = useResumeStore();
+  const { personalInfo, updatePersonalInfo, summaries } = useResumeStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [tempPhoto, setTempPhoto] = useState<string | null>(
     personalInfo.photo || null
   );
+  const [showSummarySelection, setShowSummarySelection] = useState(false);
 
   const {
     control,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
+    watch,
   } = useForm<PersonalInfoFormData>({
     resolver: yupResolver(PersonalInfoSchema),
     defaultValues: {
@@ -74,6 +74,8 @@ const PersonalProfile: React.FC = () => {
       about: personalInfo.about || "",
     },
   });
+
+  const aboutValue = watch("about"); // Get the current value of the "about" field
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -94,6 +96,7 @@ const PersonalProfile: React.FC = () => {
   };
 
   const onSubmit = (data: PersonalInfoFormData) => {
+    console.log("Form submitted:", data); // Debugging log
     updatePersonalInfo({ ...data, photo: tempPhoto });
     setModalVisible(false);
   };
@@ -107,6 +110,16 @@ const PersonalProfile: React.FC = () => {
     reset();
     setTempPhoto(personalInfo.photo);
     setModalVisible(false);
+    setShowSummarySelection(false); // Reset summary selection view
+  };
+
+  const handleSummarySelect = (summary: {
+    id: string;
+    title: string;
+    summary: string;
+  }) => {
+    setValue("about", summary.summary); // Update the "about" field with the selected summary
+    setShowSummarySelection(false); // Close the summary selection view
   };
 
   const hasPersonalInfo =
@@ -188,9 +201,11 @@ const PersonalProfile: React.FC = () => {
                   size={20}
                   color={COLORS.primary}
                 />
-                <Text style={styles.profileAboutText} numberOfLines={3}>
-                  {personalInfo.about}
-                </Text>
+                <Pressable onPress={() => setShowSummarySelection(true)}>
+                  <Text style={styles.profileAboutText} numberOfLines={3}>
+                    {aboutValue || "Write about yourself..."}
+                  </Text>
+                </Pressable>
               </View>
             </View>
 
@@ -223,103 +238,152 @@ const PersonalProfile: React.FC = () => {
             style={styles.modalContainer}
           >
             <ScrollView contentContainerStyle={styles.modalScrollContent}>
-              {/* Image Upload Section */}
-              <View style={styles.modalImageContainer}>
-                <Image
-                  source={
-                    tempPhoto
-                      ? { uri: tempPhoto }
-                      : require("@/assets/images/hobby.png")
-                  }
-                  style={styles.modalImage}
-                />
-                <Pressable style={styles.editPhotoButton} onPress={pickImage}>
-                  <GradientBackground />
-                  <Entypo name="edit" size={14} color="white" />
-                </Pressable>
-              </View>
-
               {/* Form Fields */}
-              <Controller
-                control={control}
-                name="name"
-                render={({ field: { onChange, value } }) => (
-                  <AppTextInput
-                    title="Your Name"
-                    placeholder="Kami Williams"
-                    icon="account"
-                    defaultValue={value}
-                    onChangeText={onChange}
-                    error={errors.name?.message}
+              {!showSummarySelection ? (
+                <>
+                  {/* Image Upload Section */}
+                  <View style={styles.modalImageContainer}>
+                    <Image
+                      source={
+                        tempPhoto
+                          ? { uri: tempPhoto }
+                          : require("@/assets/images/hobby.png")
+                      }
+                      style={styles.modalImage}
+                    />
+                    <Pressable
+                      style={styles.editPhotoButton}
+                      onPress={pickImage}
+                    >
+                      <GradientBackground />
+                      <Entypo name="edit" size={14} color="white" />
+                    </Pressable>
+                  </View>
+                  <Controller
+                    control={control}
+                    name="name"
+                    render={({ field: { onChange, value } }) => (
+                      <AppTextInput
+                        title="Your Name"
+                        placeholder="Kami Williams"
+                        icon="account"
+                        defaultValue={value}
+                        onChangeText={onChange}
+                        error={errors.name?.message}
+                      />
+                    )}
                   />
-                )}
-              />
-              <Controller
-                control={control}
-                name="email"
-                render={({ field: { onChange, value } }) => (
-                  <AppTextInput
-                    title="Your Email"
-                    placeholder="kami@gmail.com"
-                    icon="email"
-                    defaultValue={value}
-                    onChangeText={onChange}
-                    error={errors.email?.message}
+                  <Controller
+                    control={control}
+                    name="email"
+                    render={({ field: { onChange, value } }) => (
+                      <AppTextInput
+                        title="Your Email"
+                        placeholder="kami@gmail.com"
+                        icon="email"
+                        defaultValue={value}
+                        onChangeText={onChange}
+                        error={errors.email?.message}
+                      />
+                    )}
                   />
-                )}
-              />
-              <Controller
-                control={control}
-                name="phone"
-                render={({ field: { onChange, value } }) => (
-                  <AppTextInput
-                    title="Phone Number"
-                    placeholder="+923036861918"
-                    icon="phone"
-                    defaultValue={value}
-                    onChangeText={onChange}
-                    error={errors.phone?.message}
+                  <Controller
+                    control={control}
+                    name="phone"
+                    render={({ field: { onChange, value } }) => (
+                      <AppTextInput
+                        title="Phone Number"
+                        placeholder="+923036861918"
+                        icon="phone"
+                        defaultValue={value}
+                        onChangeText={onChange}
+                        error={errors.phone?.message}
+                      />
+                    )}
                   />
-                )}
-              />
-              <Controller
-                control={control}
-                name="about"
-                render={({ field: { onChange, value } }) => (
-                  <AppTextInput
-                    title="About You"
-                    placeholder="Write about yourself..."
-                    icon="information"
-                    defaultValue={value}
-                    onChangeText={onChange}
-                    multiline
-                    numberOfLines={4}
-                    error={errors.about?.message}
-                  />
-                )}
-              />
+                  <Pressable onPress={() => setShowSummarySelection(true)}>
+                    <View style={styles.aboutInputContainer}>
+                      <Text style={styles.aboutInputLabel}>About You</Text>
+                      <Text style={styles.aboutInputText}>
+                        {aboutValue || "Tap to add a summary..."}
+                      </Text>
 
-              {/* Buttons */}
-              <View style={styles.modalButtonContainer}>
-                <AppButton
-                  title="Save"
-                  onPress={handleSubmit(onSubmit)}
-                  style={styles.saveButton}
-                />
-                <AppButton
-                  title="Cancel"
-                  onPress={closeModal}
-                  style={styles.cancelButton}
-                />
-              </View>
+                      <Text style={styles.select}>Select</Text>
+                    </View>
+                  </Pressable>
+
+                  {/* Buttons */}
+                  <View style={styles.modalButtonContainer}>
+                    <AppButton
+                      title="Save"
+                      onPress={handleSubmit(onSubmit)}
+                      style={styles.saveButton}
+                    />
+                  </View>
+                </>
+              ) : (
+                // Summary Selection View
+                <View style={styles.summarySelectionContainer}>
+                  <Pressable onPress={() => setShowSummarySelection(false)}>
+                    <Entypo name="circle-with-cross" size={24} color="black" />
+                  </Pressable>
+
+                  <Text style={styles.titleAboutMe}>Select About Me</Text>
+                  {summaries.length > 0 ? (
+                    <>
+                      <FlatList
+                        data={summaries}
+                        keyExtractor={(item) => item.summary}
+                        renderItem={({ item }) => (
+                          <Pressable
+                            style={styles.summaryItem}
+                            onPress={() => handleSummarySelect(item)}
+                          >
+                            <Text style={styles.summaryTitle}>
+                              {item.title}
+                            </Text>
+                            <Text style={styles.summaryText}>
+                              {item.summary}
+                            </Text>
+                          </Pressable>
+                        )}
+                      />
+                      <AppButton
+                        title="Back"
+                        onPress={() => setShowSummarySelection(false)}
+                        style={styles.backButton}
+                      />
+                    </>
+                  ) : (
+                    <View style={styles.nothingSummary}>
+                      <Image
+                        source={require("@/assets/images/hobby.png")}
+                        resizeMode="contain"
+                        style={{ width: 220, height: 220, alignSelf: "center" }}
+                      />
+                      <Text style={styles.nothingText}>No Summaries Yet</Text>
+                      <AppButton
+                        title="Add One First"
+                        onPress={() => navigation.navigate("mSummary")}
+                        style={{
+                          paddingVertical: Platform.OS === "android" ? 10 : 10,
+                          marginTop: 15,
+                        }}
+                      />
+                    </View>
+                  )}
+                </View>
+              )}
             </ScrollView>
-            <Pressable
-              onPress={() => setModalVisible(false)}
-              style={styles.closeButton}
-            >
-              <Entypo name="circle-with-cross" size={24} color="white" />
-              <GradientBackground />
-            </Pressable>
+            {!showSummarySelection && (
+              <Pressable
+                onPress={() => setModalVisible(false)}
+                style={styles.closeButton}
+              >
+                <Entypo name="circle-with-cross" size={24} color="white" />
+                <GradientBackground />
+              </Pressable>
+            )}
           </KeyboardAvoidingView>
         </Modal>
       </ScrollView>
@@ -328,6 +392,26 @@ const PersonalProfile: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 16,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontFamily: FONTS.medium,
+    textAlign: "center",
+    flex: 1,
+  },
   profileCard: {
     backgroundColor: "white",
     borderRadius: 12,
@@ -382,64 +466,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     width: "100%",
   },
-  container: {
-    flex: 1,
-    backgroundColor: "white",
-  },
-  scrollContent: {
-    flexGrow: 1,
-    padding: 16,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontFamily: FONTS.medium,
-    textAlign: "center",
-    flex: 1,
-  },
-  profileContent: {
-    alignItems: "center",
-    marginTop: 24,
-  },
-  profileImage: {
-    width: 128,
-    height: 128,
-    borderRadius: 64,
-    borderWidth: 2,
-    borderColor: COLORS.secondary,
-    marginBottom: 16,
-  },
-  profileName: {
-    fontSize: 24,
-    fontFamily: FONTS.bold,
-    marginBottom: 8,
-  },
-  profileEmail: {
-    fontSize: 18,
-    color: COLORS.gray,
-    marginBottom: 4,
-  },
-  profilePhone: {
-    fontSize: 18,
-    color: COLORS.gray,
-    marginBottom: 4,
-  },
-  profileAbout: {
-    fontSize: 16,
-    color: COLORS.gray,
-    textAlign: "center",
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  editButton: {
-    width: 256,
-    marginTop: 16,
-  },
   emptyProfile: {
     flex: 1,
     alignItems: "center",
@@ -486,6 +512,23 @@ const styles = StyleSheet.create({
     padding: 4,
     overflow: "hidden",
   },
+  aboutInputContainer: {
+    marginBottom: 16,
+  },
+  aboutInputLabel: {
+    fontSize: 16,
+    fontFamily: FONTS.medium,
+    marginBottom: 8,
+  },
+  aboutInputText: {
+    fontSize: 14,
+    color: COLORS.gray,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    borderRadius: 8,
+    paddingRight: 50,
+  },
   modalButtonContainer: {
     marginTop: 24,
     gap: 12,
@@ -494,9 +537,6 @@ const styles = StyleSheet.create({
   saveButton: {
     // Specific styling for save button if needed
   },
-  cancelButton: {
-    // Specific styling for cancel button if needed
-  },
   closeButton: {
     position: "absolute",
     top: 70,
@@ -504,6 +544,49 @@ const styles = StyleSheet.create({
     padding: 5,
     overflow: "hidden",
     borderRadius: 50,
+  },
+  summarySelectionContainer: {
+    flex: 1,
+    padding: 16,
+  },
+  summaryItem: {
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    marginBottom: 10,
+    borderRadius: 10,
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontFamily: FONTS.medium,
+    textAlign: "center",
+    marginBottom: 15,
+  },
+  summaryText: {
+    fontSize: 14,
+    color: "#666",
+  },
+  backButton: {
+    marginTop: 16,
+  },
+  titleAboutMe: {
+    textAlign: "center",
+    fontSize: 20,
+    fontFamily: FONTS.bold,
+    marginBottom: 30,
+  },
+  nothingText: {
+    textAlign: "center",
+    fontSize: 22,
+    fontFamily: FONTS.bold,
+  },
+  select: {
+    textDecorationLine: "underline",
+    position: "absolute",
+    right: 10,
+    top: "50%",
+    color: COLORS.secondary,
+    fontFamily: FONTS.bold,
   },
 });
 

@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Alert,
   FlatList,
   Image,
   Modal,
@@ -84,6 +83,13 @@ const Hobbies: React.FC = () => {
                     <GradientBackground />
                   </View>
                   <Text style={styles.titleHobby}>{item}</Text>
+                  <Pressable onPress={() => removeHobby(item)}>
+                    <MaterialCommunityIcons
+                      name="delete"
+                      color="black"
+                      size={24}
+                    />
+                  </Pressable>
                 </View>
               )}
             />
@@ -94,24 +100,21 @@ const Hobbies: React.FC = () => {
       </SafeView>
       <Modal visible={isOpenModal} animationType="slide">
         <View style={{ flex: 1, paddingTop: 100, paddingHorizontal: 20 }}>
-          <Text style={[styles.title, { marginBottom: 40 }]}>Hobbies</Text>
+          <Text style={[styles.title, { marginBottom: 40 }]}>Add Hobby</Text>
           <Controller
             control={control}
             name="hobby"
             render={({ field: { onChange, value } }) => (
               <AppTextInput
-                title="Enter Hobbies"
+                title="Enter Hobby"
                 defaultValue={value}
                 onChangeText={onChange}
-                placeholder="Enter Your Hobbies"
+                placeholder="Enter Your Hobby"
                 icon="account"
+                errorMessage={errors.hobby?.message}
               />
             )}
           />
-          {errors.hobby && (
-            <Text style={{ color: "red" }}>{errors.hobby.message}</Text>
-          )}
-
           <AppButton title="Save" onPress={handleSubmit(handleHobbiesSave)} />
         </View>
       </Modal>
@@ -141,11 +144,6 @@ const styles = StyleSheet.create({
     height: "70%",
     alignSelf: "center",
   },
-  itemIconContainer: {
-    padding: 10,
-    width: "20%",
-    flexDirection: "row",
-  },
   listContainer: {
     flex: 1,
     marginTop: 10,
@@ -167,5 +165,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: FONTS.semiBold,
     marginLeft: 15,
+    flex: 1,
   },
 });

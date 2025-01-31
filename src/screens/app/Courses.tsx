@@ -73,6 +73,8 @@ const Courses: React.FC = ({ navigation }) => {
         />
       </Pressable>
 
+      <View style={{ height: 30 }} />
+
       {courses.length < 1 ? (
         <View style={styles.imageLoad}>
           <Image

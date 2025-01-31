@@ -1,4 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React from "react";
 import GradientBackground from "./GradientBackground";
 import { COLORS, FONTS } from "@/src/constants/theme";
@@ -27,7 +33,7 @@ const AppButton = ({
   isGradient = true,
 }: AppButtonProps) => {
   return (
-    <Pressable
+    <TouchableOpacity
       style={[styles.btnContainer, style, { backgroundColor: bgColor }]}
       onPress={onPress}
     >
@@ -36,7 +42,7 @@ const AppButton = ({
       </Text>
 
       {isGradient && <GradientBackground />}
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

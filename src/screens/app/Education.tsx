@@ -79,6 +79,8 @@ const Education: React.FC = ({ navigation }) => {
         />
       </Pressable>
 
+      <View style={{ height: 30 }} />
+
       {education.length < 1 ? (
         <View style={styles.imageLoad}>
           <Image
@@ -138,6 +140,9 @@ const Education: React.FC = ({ navigation }) => {
 
       <Modal visible={isModalVisible} animationType="slide">
         <View style={{ flex: 1, paddingTop: 100, paddingHorizontal: 20 }}>
+          <Pressable onPress={() => setModalVisible(false)}>
+            <Entypo name="circle-with-cross" size={24} color="black" />
+          </Pressable>
           <Text style={[styles.title, { marginBottom: 40 }]}>
             Add Education
           </Text>
