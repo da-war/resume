@@ -5,9 +5,13 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { COLORS, FONTS } from "@/src/constants/theme";
 import SettingCard from "@/src/components/manage/SettingCard";
 import { useNavigation } from "@react-navigation/native";
+import { useResumeStore } from "@/src/store/resumeStore";
 
 const Manage = () => {
   const navigaiton = useNavigation();
+
+  const personalInfo = useResumeStore((state) => state.personalInfo);
+
   return (
     <SafeView style={styles.container}>
       <Text style={styles.title}>Setting</Text>
@@ -18,13 +22,25 @@ const Manage = () => {
       >
         <View style={styles.innerProfile}>
           <Image
-            source={require("@/assets/images/resume1.png")}
+            source={
+              !personalInfo.photo
+                ? require("@/assets/images/resume1.png")
+                : { uri: personalInfo.photo }
+            }
             style={styles.image}
             resizeMode="cover"
           />
           <View>
-            <Text style={styles.name}>Dawar</Text>
-            <Text style={styles.subTitle}>id,media,shopping</Text>
+            <Text style={styles.name}>
+              {personalInfo.name ? personalInfo.name : "Profile Yet to setup"}
+            </Text>
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              style={styles.subTitle}
+            >
+              {personalInfo.email ? personalInfo.email : "Profile Yet to setup"}
+            </Text>
           </View>
         </View>
         <View>

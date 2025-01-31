@@ -33,6 +33,9 @@ export default function PreviewScreen({ navigation, route }) {
   const languages = useResumeStore((state) => state.languages);
   const hobbies = useResumeStore((state) => state.hobbies);
   const achievements = useResumeStore((state) => state.achievements);
+  const education = useResumeStore((state) => state.education);
+  const courses = useResumeStore((state) => state.courses);
+  const computerSkills = useResumeStore((state) => state.computerSkills);
 
   // Convert image URI to base64
   useEffect(() => {
@@ -67,6 +70,9 @@ export default function PreviewScreen({ navigation, route }) {
       languages,
       hobbies,
       achievements,
+      education,
+      computerSkills,
+      courses,
     }),
     [
       personalInfo,
@@ -76,6 +82,9 @@ export default function PreviewScreen({ navigation, route }) {
       languages,
       hobbies,
       achievements,
+      education,
+      computerSkills,
+      courses,
     ]
   );
 
@@ -86,7 +95,7 @@ export default function PreviewScreen({ navigation, route }) {
     }
   }, [selectedTemplate, resumeData]);
 
-  const saveToTemplateHistory = async (templateName, pdfUri) => {
+  const saveToTemplateHistory = async (templateName: any, pdfUri: any) => {
     try {
       const existingHistory = await AsyncStorage.getItem(TEMPLATE_HISTORY_KEY);
       const history = existingHistory ? JSON.parse(existingHistory) : [];
