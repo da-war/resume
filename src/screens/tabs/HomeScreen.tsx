@@ -45,17 +45,17 @@ const HomeScreen = () => {
   const [recentTemplates, setRecentTemplates] = useState([]);
   const navigation = useNavigation();
 
-  // useEffect(() => {
-  //   loadRecentTemplates();
-  // }, []);
+  useEffect(() => {
+    loadRecentTemplates();
+  }, []);
 
   // useEffect(() => {
   //   deleteAsync();
   // }, []);
 
-  const deleteAsync = async () => {
-    await AsyncStorage.removeItem("resume-storage");
-  };
+  // const deleteAsync = async () => {
+  //   await AsyncStorage.removeItem("resume-storage");
+  // };
 
   const loadRecentTemplates = async () => {
     try {
