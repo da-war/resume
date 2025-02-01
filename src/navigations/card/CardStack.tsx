@@ -13,6 +13,7 @@ import Education from "@/src/screens/app/Education";
 import Courses from "@/src/screens/app/Courses";
 import SummaryScreen from "@/src/screens/app/SummaryScreen";
 import ComputerSkills from "@/src/screens/app/ComputerSkills";
+import Summary2 from "@/src/screens/app/Summary2";
 
 const Stack = createNativeStackNavigator();
 
@@ -29,7 +30,7 @@ const CardStack = () => {
       <Stack.Screen name="achievements" component={Achievements} />
       <Stack.Screen name="education" component={Education} />
       <Stack.Screen name="courses" component={Courses} />
-      <Stack.Screen name="summary" component={SummaryScreen} />
+      <Stack.Screen name="summary2" component={Summary2} />
       <Stack.Screen name="computerSkills" component={ComputerSkills} />
     </Stack.Navigator>
   );

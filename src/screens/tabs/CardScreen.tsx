@@ -70,7 +70,7 @@ const CardScreen = () => {
       id: 11,
       title: "Summary",
       icon: require("@/assets/icons/education.png"),
-      onPress: () => navigation.navigate("summary"),
+      onPress: () => navigation.navigate("summary2"),
     },
     {
       id: 12,
