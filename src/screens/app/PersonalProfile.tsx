@@ -364,7 +364,10 @@ const PersonalProfile: React.FC = () => {
                       <Text style={styles.nothingText}>No Summaries Yet</Text>
                       <AppButton
                         title="Add One First"
-                        onPress={() => navigation.navigate("mSummary")}
+                        onPress={() => {
+                          setModalVisible(false);
+                          navigation.navigate("mSummary");
+                        }}
                         style={{
                           paddingVertical: Platform.OS === "android" ? 10 : 10,
                           marginTop: 15,

@@ -858,7 +858,7 @@ export const templates = {
             border-left: 4px solid #3498db;
         }
         
-        .education-header {
+        .education-header {r
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
